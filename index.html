@@ -1,271 +1,989 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard de Matrículas – Escola do Choro</title>
-<style>
-  :root {
-    --verde: #2e7d32;
-    --verde-claro: #4caf50;
-    --azul: #1565c0;
-    --laranja: #e65100;
-    --cinza: #455a64;
-    --bg: #f5f5f5;
-    --card: #ffffff;
-    --borda: #e0e0e0;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: #212121; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Matrículas - Escola do Choro de Brasília</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-  header {
-    background: var(--verde);
-    color: white;
-    padding: 18px 28px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-  header h1 { font-size: 1.3rem; font-weight: 700; letter-spacing: .3px; }
-  header .sub { font-size: .85rem; opacity: .85; margin-top: 2px; }
-  .atualizado { font-size: .8rem; opacity: .75; text-align: right; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
 
-  .container { max-width: 1300px; margin: 0 auto; padding: 24px 16px; }
+        .header {
+            background: linear-gradient(135deg, #2d6a4f 0%, #1b4332 100%);
+            color: white;
+            padding: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
 
-  /* KPI Cards */
-  .kpi-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 16px;
-    margin-bottom: 28px;
-  }
-  .kpi {
-    background: var(--card);
-    border-radius: 10px;
-    padding: 20px 18px;
-    border-left: 5px solid var(--verde);
-    box-shadow: 0 1px 4px rgba(0,0,0,.08);
-  }
-  .kpi.azul { border-left-color: var(--azul); }
-  .kpi.laranja { border-left-color: var(--laranja); }
-  .kpi.cinza { border-left-color: var(--cinza); }
-  .kpi .num { font-size: 2.2rem; font-weight: 800; line-height: 1; margin-bottom: 6px; }
-  .kpi .label { font-size: .82rem; color: #666; text-transform: uppercase; letter-spacing: .4px; }
+        .header-left {
+            flex: 1;
+        }
 
-  /* Seções */
-  .secoes { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 28px; }
-  @media (max-width: 768px) { .secoes { grid-template-columns: 1fr; } }
+        .header-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
 
-  .card {
-    background: var(--card);
-    border-radius: 10px;
-    padding: 20px;
-    box-shadow: 0 1px 4px rgba(0,0,0,.08);
-  }
-  .card h2 { font-size: 1rem; color: var(--verde); margin-bottom: 14px; border-bottom: 2px solid var(--borda); padding-bottom: 8px; }
+        .header-updated {
+            font-size: 13px;
+            opacity: 0.9;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
 
-  /* Tabela de cursos */
-  .tabela-lista { width: 100%; border-collapse: collapse; font-size: .88rem; }
-  .tabela-lista tr:not(:last-child) td { border-bottom: 1px solid var(--borda); }
-  .tabela-lista td { padding: 8px 4px; }
-  .tabela-lista td:last-child { text-align: right; font-weight: 700; color: var(--verde); }
-  .barra-wrap { height: 6px; background: #e8f5e9; border-radius: 3px; margin-top: 3px; }
-  .barra { height: 6px; background: var(--verde-claro); border-radius: 3px; }
+        .header-buttons {
+            display: flex;
+            gap: 12px;
+        }
 
-  /* Alerta turmas */
-  .alerta-lista { display: flex; flex-direction: column; gap: 10px; }
-  .alerta-item {
-    background: #fff8e1;
-    border-left: 4px solid #f9a825;
-    border-radius: 6px;
-    padding: 10px 14px;
-    font-size: .88rem;
-  }
-  .alerta-item .nome { font-weight: 700; margin-bottom: 2px; }
-  .alerta-item .detalhe { color: #666; font-size: .82rem; }
-  .alerta-item .qtd { font-size: 1.3rem; font-weight: 800; color: var(--laranja); float: right; margin-top: -4px; }
+        .btn {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
 
-  /* Histórico */
-  .hist-card { margin-bottom: 28px; }
-  .hist-canvas-wrap { position: relative; height: 220px; }
-  canvas { max-width: 100%; }
+        .btn-primary {
+            background-color: white;
+            color: #2d6a4f;
+        }
 
-  /* Professores */
-  .prof-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
-  .prof-card {
-    background: var(--card);
-    border-radius: 8px;
-    padding: 14px 16px;
-    border-top: 3px solid var(--azul);
-    box-shadow: 0 1px 3px rgba(0,0,0,.07);
-    font-size: .88rem;
-  }
-  .prof-card .pnome { font-weight: 700; margin-bottom: 4px; font-size: .92rem; }
-  .prof-card .pnum { color: var(--azul); font-size: 1.5rem; font-weight: 800; }
+        .btn-primary:hover {
+            background-color: #f0f0f0;
+            transform: translateY(-2px);
+        }
 
-  /* Footer */
-  footer { text-align: center; font-size: .78rem; color: #999; padding: 24px 16px; }
-  .badge { display: inline-block; background: var(--verde); color: white; font-size: .7rem; padding: 2px 8px; border-radius: 12px; vertical-align: middle; margin-left: 6px; }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
 
-  /* Sem dados */
-  .sem-dados { text-align: center; padding: 40px 20px; color: #999; }
-  .sem-dados .icon { font-size: 2.5rem; margin-bottom: 10px; }
-</style>
+        .kpi-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .kpi-card {
+            background: white;
+            padding: 24px;
+            border-radius: 8px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+            border-left: 5px solid #40916c;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+        }
+
+        .kpi-card.warning {
+            border-left-color: #ff8c42;
+        }
+
+        .kpi-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: #666;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .kpi-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #2d6a4f;
+        }
+
+        .kpi-card.warning .kpi-value {
+            color: #ff8c42;
+        }
+
+        .section {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 30px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #2d6a4f;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 900px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin-bottom: 20px;
+        }
+
+        .chart-container-mini {
+            position: relative;
+            height: 300px;
+        }
+
+        .small-list {
+            list-style: none;
+        }
+
+        .small-list-item {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+        }
+
+        .small-list-item:last-child {
+            border-bottom: none;
+        }
+
+        .small-list-label {
+            font-weight: 600;
+            color: #2d6a4f;
+            flex: 1;
+        }
+
+        .small-list-value {
+            background-color: #e8f5e9;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #2d6a4f;
+            text-align: center;
+        }
+
+        .semester-progress {
+            margin: 20px 0;
+            padding: 16px;
+            background: #f5f5f5;
+            border-radius: 6px;
+        }
+
+        .semester-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 24px;
+            background: #e0e0e0;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #40916c 0%, #2d6a4f 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .professor-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+        }
+
+        .professor-card {
+            background: #f9f9f9;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-left: 4px solid #40916c;
+        }
+
+        .professor-card:hover {
+            background: #f0f0f0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .professor-name {
+            font-weight: 700;
+            color: #2d6a4f;
+            font-size: 15px;
+            margin-bottom: 8px;
+        }
+
+        .professor-meta {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 10px;
+            font-size: 13px;
+        }
+
+        .professor-meta-item {
+            background: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            border-left: 2px solid #40916c;
+        }
+
+        .professor-meta-label {
+            color: #666;
+            font-weight: 600;
+        }
+
+        .professor-meta-value {
+            color: #2d6a4f;
+            font-weight: 700;
+        }
+
+        .professor-courses {
+            font-size: 12px;
+            color: #666;
+            padding-top: 8px;
+            border-top: 1px solid #e0e0e0;
+            margin-top: 8px;
+        }
+
+        .course-tag {
+            display: inline-block;
+            background: #e8f5e9;
+            color: #2d6a4f;
+            padding: 2px 8px;
+            border-radius: 3px;
+            margin-right: 4px;
+            margin-top: 4px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .professor-expanded {
+            margin-top: 12px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .professor-card.expanded .professor-expanded {
+            max-height: 500px;
+        }
+
+        .professor-table {
+            width: 100%;
+            font-size: 12px;
+            border-collapse: collapse;
+            margin-top: 8px;
+        }
+
+        .professor-table th {
+            background: #e8f5e9;
+            padding: 6px;
+            text-align: left;
+            font-weight: 600;
+            color: #2d6a4f;
+            border-bottom: 1px solid #c8e6c9;
+        }
+
+        .professor-table td {
+            padding: 6px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .sort-buttons {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .sort-btn {
+            padding: 8px 16px;
+            background: #f0f0f0;
+            border: 1px solid #d0d0d0;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            color: #2d6a4f;
+            transition: all 0.2s;
+        }
+
+        .sort-btn.active {
+            background: #2d6a4f;
+            color: white;
+            border-color: #2d6a4f;
+        }
+
+        .sort-btn:hover {
+            background: #40916c;
+            color: white;
+            border-color: #40916c;
+        }
+
+        .infantil-section {
+            background: linear-gradient(135deg, #f1f8f5 0%, #e8f5e9 100%);
+        }
+
+        .infantil-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+        }
+
+        @media (max-width: 900px) {
+            .infantil-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .infantil-table {
+            width: 100%;
+            font-size: 13px;
+            border-collapse: collapse;
+        }
+
+        .infantil-table th {
+            background: #c8e6c9;
+            padding: 12px;
+            text-align: left;
+            font-weight: 700;
+            color: #2d6a4f;
+            border-bottom: 2px solid #81c784;
+        }
+
+        .infantil-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .infantil-table tr:hover {
+            background: #f5f5f5;
+        }
+
+        .infantil-kpi-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .infantil-kpi {
+            background: white;
+            padding: 16px;
+            border-radius: 6px;
+            border-left: 4px solid #40916c;
+            text-align: center;
+        }
+
+        .infantil-kpi-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #666;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .infantil-kpi-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2d6a4f;
+        }
+
+        .no-data-message {
+            text-align: center;
+            padding: 30px;
+            color: #666;
+            font-style: italic;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+    </style>
 </head>
 <body>
-<header>
-  <div>
-    <h1>🎵 Dashboard de Matrículas</h1>
-    <div class="sub">Escola do Choro de Brasília</div>
-  </div>
-  <div class="atualizado">
-    Atualizado em<br>
-    <strong id="data-atualiz">–</strong>
-  </div>
-</header>
-
-<div class="container">
-
-  <!-- KPIs -->
-  <div class="kpi-grid">
-    <div class="kpi">
-      <div class="num" id="kpi-alunos">–</div>
-      <div class="label">Total de Alunos</div>
+    <div class="header">
+        <div class="header-left">
+            <div class="header-title">🎵 Dashboard de Matrículas</div>
+            <div class="header-title" style="font-size: 18px; font-weight: 500;">Escola do Choro de Brasília</div>
+            <div class="header-updated" id="lastUpdated"></div>
+        </div>
+        <div class="header-buttons">
+            <button class="btn btn-primary" onclick="showHistoricoModal()">📅 Histórico</button>
+        </div>
     </div>
-    <div class="kpi azul">
-      <div class="num" id="kpi-sem-teoria">–</div>
-      <div class="label">Sem Teoria Musical</div>
+
+    <div class="container">
+        <!-- KPI Cards -->
+        <div class="kpi-section">
+            <div class="kpi-card">
+                <div class="kpi-label">Total de Alunos</div>
+                <div class="kpi-value" id="totalAlunos">-</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Sem Teoria Musical</div>
+                <div class="kpi-value" id="semTeoria">-</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Turmas Ativas</div>
+                <div class="kpi-value" id="turmasAtivas">-</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Professores</div>
+                <div class="kpi-value" id="countProfessores">-</div>
+            </div>
+            <div class="kpi-card warning">
+                <div class="kpi-label">Turmas c/ ≤ 2 Alunos</div>
+                <div class="kpi-value" id="poucoAlunos">-</div>
+            </div>
+        </div>
+
+        <!-- Evolução de Matrículas -->
+        <div class="section">
+            <div class="section-title">📈 Evolução de Matrículas</div>
+
+            <div class="semester-progress">
+                <div class="semester-label">Semestre 2026/1</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="semesterProgress" style="width: 50%;">
+                        13 semanas de 26
+                    </div>
+                </div>
+                <div style="margin-top: 8px; font-size: 12px; color: #666;">
+                    Encera em 30/06/2026
+                </div>
+            </div>
+
+            <div id="historicoMessage" class="no-data-message"></div>
+            <div class="chart-container" id="historicoChartContainer" style="display: none;">
+                <canvas id="historicoChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Two-column section: Cursos + Turmas com Poucos -->
+        <div class="grid-2">
+            <div class="section">
+                <div class="section-title">📊 Alunos por Curso (Top 15)</div>
+                <div class="chart-container">
+                    <canvas id="cursosChart"></canvas>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">⚠️ Turmas com Poucos Alunos</div>
+                <ul class="small-list" id="poucosList"></ul>
+            </div>
+        </div>
+
+        <!-- Professores -->
+        <div class="section">
+            <div class="section-title" id="professorTitle">👨‍🏫 Professores e suas Turmas</div>
+
+            <div class="sort-buttons">
+                <button class="sort-btn active" onclick="sortProfessores('alunos')">Por Alunos ↓</button>
+                <button class="sort-btn" onclick="sortProfessores('turmas')">Por Turmas ↓</button>
+                <button class="sort-btn" onclick="sortProfessores('nome')">A-Z</button>
+            </div>
+
+            <div class="professor-grid" id="professorGrid"></div>
+        </div>
+
+        <!-- Infantil -->
+        <div class="section infantil-section">
+            <div class="section-title">👶 Turmas Infantis</div>
+
+            <div class="infantil-kpi-cards">
+                <div class="infantil-kpi">
+                    <div class="infantil-kpi-label">Total Alunos</div>
+                    <div class="infantil-kpi-value" id="infantilAlunos">-</div>
+                </div>
+                <div class="infantil-kpi">
+                    <div class="infantil-kpi-label">Total Turmas</div>
+                    <div class="infantil-kpi-value" id="infantilTurmas">-</div>
+                </div>
+                <div class="infantil-kpi">
+                    <div class="infantil-kpi-label">Média por Turma</div>
+                    <div class="infantil-kpi-value" id="infantilMedia">-</div>
+                </div>
+            </div>
+
+            <div class="infantil-grid">
+                <div>
+                    <h4 style="margin-bottom: 12px; color: #2d6a4f;">Turmas Infantis Detalhadas</h4>
+                    <table class="infantil-table">
+                        <thead>
+                            <tr>
+                                <th>Turma</th>
+                                <th>Curso</th>
+                                <th>Professor</th>
+                                <th style="text-align: center;">Alunos</th>
+                            </tr>
+                        </thead>
+                        <tbody id="infantilTableBody">
+                        </tbody>
+                    </table>
+                </div>
+                <div>
+                    <h4 style="margin-bottom: 12px; color: #2d6a4f;">Distribuição de Cursos</h4>
+                    <div class="chart-container-mini">
+                        <canvas id="infantilChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="kpi laranja">
-      <div class="num" id="kpi-turmas">–</div>
-      <div class="label">Turmas Ativas</div>
+
+    <!-- Modal for Histórico -->
+    <div id="historicoModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+        <div style="background: white; border-radius: 8px; padding: 30px; max-width: 600px; width: 90%;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="color: #2d6a4f;">📅 Histórico de Matrículas</h2>
+                <button onclick="closeHistoricoModal()" style="background: none; border: none; font-size: 24px; cursor: pointer;">✕</button>
+            </div>
+            <div id="historicoContent"></div>
+        </div>
     </div>
-    <div class="kpi cinza">
-      <div class="num" id="kpi-alerta">–</div>
-      <div class="label">Turmas c/ ≤ 2 Alunos</div>
-    </div>
-  </div>
 
-  <!-- Histórico -->
-  <div class="card hist-card">
-    <h2>📈 Evolução de Matrículas</h2>
-    <div class="hist-canvas-wrap">
-      <canvas id="grafico-hist"></canvas>
-    </div>
-  </div>
+    <script>
+        // ============ DATA ============
+        const dashboardData = {
+            "total_alunos": 1523,
+            "total_sem_teoria": 1097,
+            "total_turmas_ativas": 97,
+            "count_turmas_com_poucos": 79,
+            "count_professores": 30,
+            "turmas_com_poucos": [
+                {"nome": "2026/1º - BÁSICO 3 - QUINTA - 17:30 - LILI LEON", "curso": "ACORDEON", "alunos": 1, "professor": "LILI LEON"},
+                {"nome": "2026/1º - BÀSICO - SEGUNDA - 19:30 - JACKSON DELANO", "curso": "ARRANJO", "alunos": 2, "professor": "JACKSON DELANO CRUZ LEITE"},
+                {"nome": "2026/1º - AVANÇADO 2 - TERÇA - 17:30 - FELIPE NUNES", "curso": "BANDOLIM", "alunos": 2, "professor": "FELIPE NUNES"},
+                {"nome": "2026/1º - BÁSICO 2 - TERÇA - 19:30 - FELIPE NUNES", "curso": "BANDOLIM", "alunos": 1, "professor": "FELIPE NUNES"},
+                {"nome": "2026/1º - FORMANDO - TERÇA - 20:30 - FELIPE NUNES", "curso": "BANDOLIM", "alunos": 1, "professor": "FELIPE NUNES"},
+                {"nome": "2026/1º - INTERMEDIARIO 2 - SEGUNDA - 19:30 - FELIPE NUNES", "curso": "BANDOLIM", "alunos": 2, "professor": "FELIPE NUNES"},
+                {"nome": "2026/1º - BÁSICO 2 - QUINTA - 15:30 - MÁRCIA TAUIL", "curso": "CANTO POPULAR", "alunos": 0, "professor": "MÁRCIA TAUIL"},
+                {"nome": "2026/1º - BÁSICO 2 - SEGUNDA - 16:30 - MATHEUS VILANOVA", "curso": "CANTO POPULAR", "alunos": 1, "professor": "MATHEUS VILANOVA"},
+                {"nome": "2026/1º - BÁSICO 3 - SEGUNDA - 18:30 - MATHEUS VILANOVA", "curso": "CANTO POPULAR", "alunos": 2, "professor": "MATHEUS VILANOVA"}
+            ],
+            "cursos": [
+                ["TEORIA E PERCEPÇÃO MUSICAL", 430],
+                ["VIOLÃO", 175],
+                ["PANDEIRO", 134],
+                ["CANTO POPULAR", 121],
+                ["PROMO50", 96],
+                ["PERCUSSÃO", 59],
+                ["CAVAQUINHO", 53],
+                ["FLAUTA TRANSVERSAL", 50],
+                ["BLOQUINHO CORTANDO CEBOLA", 40],
+                ["SAXOFONE", 25],
+                ["ACORDEON", 23],
+                ["GAITA CROMATICA", 23],
+                ["TECLADO - INFANTIL", 24],
+                ["VIOLÃO CRIANÇA", 21],
+                ["BANDOLIM", 18]
+            ],
+            "professores": [
+                {"nome": "JESUWAY LEÃO", "turmas": 28, "alunos": 205, "cursos": ["TECLADO - INFANTIL", "TEORIA E PERCEPÇÃO MUSICAL", "MUSICALIZAÇÃO 6 & 7 ANOS", "PRÉ-INSTRUMENTAL"]},
+                {"nome": "TIAGO JOÃO", "turmas": 24, "alunos": 175, "cursos": ["VIOLÃO", "PRÁTICA DE CONJUNTO - CHORO"]},
+                {"nome": "GIOVANI FANTINATI", "turmas": 19, "alunos": 147, "cursos": ["VIOLÃO", "VIOLÃO CRIANÇA"]},
+                {"nome": "MÁRCIA TAUIL", "turmas": 15, "alunos": 110, "cursos": ["CANTO POPULAR", "BLOQUINHO CORTANDO CEBOLA"]},
+                {"nome": "EDUARDO MILEN VIÉGAS JÚNIOR", "turmas": 13, "alunos": 100, "cursos": ["PERCUSSÃO", "PROMO50"]},
+                {"nome": "MATEUS TIMPONI", "turmas": 10, "alunos": 74, "cursos": ["PANDEIRO", "PERCUSSÃO"]},
+                {"nome": "GABRIEL CARNEIRO", "turmas": 10, "alunos": 69, "cursos": ["PANDEIRO", "PRÁTICA DE CONJUNTO - SAMBA"]},
+                {"nome": "ARTHUR REIS", "turmas": 10, "alunos": 67, "cursos": ["VIOLÃO", "CAVAQUINHO"]},
+                {"nome": "JESSICA CARVALHO", "turmas": 10, "alunos": 64, "cursos": ["CANTO POPULAR"]},
+                {"nome": "DIANA MOTA", "turmas": 10, "alunos": 61, "cursos": ["FLAUTA TRANSVERSAL"]}
+            ],
+            "infantil_alunos": 145,
+            "infantil_count": 35,
+            "infantil_media": 4.1,
+            "infantil_cursos": [
+                ["VIOLÃO CRIANÇA", 21],
+                ["TECLADO - INFANTIL", 24],
+                ["MUSICALIZAÇÃO 1 A 5 ANOS", 16],
+                ["PRÉ-INSTRUMENTAL", 4],
+                ["VIOLINO JUVENIL", 1],
+                ["MUSICALIZAÇÃO 6 & 7 ANOS", 0],
+                ["PERCUSSÃO E VOZ PARA CRIANÇAS", 7],
+                ["INICIAÇÃO MUSICAL", 3]
+            ],
+            "infantil_turmas": [
+                {"nome": "2026/1º - BÁSICO 1 - QUINTA - 15:30 - LILI LEON", "codigo": "ACOR-01-15:30", "curso": "TECLADO - INFANTIL", "professor": "LILI LEON", "alunos": 8},
+                {"nome": "2026/1º - 1 & 2 ANOS - SEXTA - 09:00 - IGNACIO GOMEZ", "codigo": "INF-MUS-1A5-SEX-09:00", "curso": "MUSICALIZAÇÃO 1 A 5 ANOS", "professor": "IGNACIO GOMEZ", "alunos": 0},
+                {"nome": "2026/1º - 1 & 2 ANOS - SÁBADO - 09:00 - IGNACIO GOMEZ", "codigo": "INF-MUS-1A5-SAB-09:00", "curso": "MUSICALIZAÇÃO 1 A 5 ANOS", "professor": "IGNACIO GOMEZ", "alunos": 2},
+                {"nome": "2026/1º - BASIC 1 - QUARTA - 09:00 - IGNACIO GOMEZ", "codigo": "INF-VIO-B1-QUA-09:00-IGNACIO", "curso": "VIOLÃO CRIANÇA", "professor": "IGNACIO GOMEZ", "alunos": 4},
+                {"nome": "2026/1º - BÁSICO 3 - SEXTA - 10:00 - IGNACIO GOMEZ", "codigo": "INF-V6-B3-SEX-10:00-IGNACIO", "curso": "VIOLÃO CRIANÇA", "professor": "IGNACIO GOMEZ", "alunos": 0},
+                {"nome": "2026/1º - BÁSICO 4 - QUINTA - 18:30 - IGNACIO GOMEZ", "codigo": "INF-UK-B4-QUI-18:30-IGNACIO", "curso": "UKULELE", "professor": "IGNACIO GOMEZ", "alunos": 1}
+            ],
+            "historico": [
+                {"data": "2026-03-27", "data_fmt": "26/03/2026 16:36", "total_alunos": 1485, "total_turmas": 248}
+            ]
+        };
 
-  <!-- Cursos + Alertas -->
-  <div class="secoes">
-    <div class="card">
-      <h2>📚 Alunos por Curso</h2>
-      <table class="tabela-lista" id="tabela-cursos">
-        <tbody></tbody>
-      </table>
-    </div>
-    <div class="card">
-      <h2>⚠️ Turmas com Poucos Alunos</h2>
-      <div class="alerta-lista" id="lista-alertas"></div>
-    </div>
-  </div>
+        let chartInstances = {};
 
-  <!-- Professores -->
-  <div class="card" style="margin-bottom:28px">
-    <h2>👨‍🏫 Alunos por Professor</h2>
-    <div class="prof-grid" id="prof-grid"></div>
-  </div>
+        // ============ INITIALIZATION ============
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeDashboard();
+        });
 
-</div>
+        function initializeDashboard() {
+            // Update last updated time
+            const today = new Date();
+            const dateStr = today.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            document.getElementById('lastUpdated').textContent = 'Atualizado em ' + dateStr;
 
-<footer>
-  Dashboard atualizado automaticamente via tarefa agendada
-  <span class="badge">Escola do Choro</span>
-</footer>
+            // Update KPIs
+            document.getElementById('totalAlunos').textContent = dashboardData.total_alunos.toLocaleString('pt-BR');
+            document.getElementById('semTeoria').textContent = dashboardData.total_sem_teoria.toLocaleString('pt-BR');
+            document.getElementById('turmasAtivas').textContent = dashboardData.total_turmas_ativas.toLocaleString('pt-BR');
+            document.getElementById('countProfessores').textContent = dashboardData.count_professores.toLocaleString('pt-BR');
+            document.getElementById('poucoAlunos').textContent = dashboardData.count_turmas_com_poucos.toLocaleString('pt-BR');
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script>
-// ============================================================
-// DADOS — gerados automaticamente pela tarefa agendada
-// ============================================================
-const DADOS = {"data_atualizacao":"27/03/2026 16:20","turmas":[{"nome":"2026/1º - BÁSICO 1 - QUINTA - 18:30 - LILI LEON","codigo":"ACO-B1-QUI-18:30","curso":"ACORDEON","modulo":"BÁSICO 1","unidade":"ICEM-SEDE","horario":"QUI - 18:30 - 19:20","capacidade":10,"alunos":7,"cancelamentos":2,"status":"EM ANDAMENTO","professor":"LILI LEON"},{"nome":"2026/1º - BÁSICO 2 - QUINTA - 19:30 - LILI LEON","codigo":"ACO-B2-QUI-19:30","curso":"ACORDEON","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"QUI - 19:30 - 20:20","capacidade":10,"alunos":7,"cancelamentos":0,"status":"EM ANDAMENTO","professor":"LILI LEON"},{"nome":"2026/1º - BÁSICO 3 - QUINTA - 17:30 - LILI LEON","codigo":"ACO-B3-QUI-17:30","curso":"ACORDEON","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"QUI - 17:30 - 18:20","capacidade":10,"alunos":1,"cancelamentos":2,"status":"EM ANDAMENTO","professor":"LILI LEON"},{"nome":"2026/1º - BÁSICO 1 - QUINTA - 15:30 - LILI LEON","codigo":"ACOR-01-15:30","curso":"ACORDEON","modulo":"BÁSICO 1","unidade":"ICEM-SEDE","horario":"QUI - 15:30 - 16:20","capacidade":10,"alunos":8,"cancelamentos":0,"status":"EM ANDAMENTO","professor":"LILI LEON"},{"nome":"2026/1º - BÀSICO - SEGUNDA - 19:30 - JACKSON DELANO","codigo":"ARR-L-SEG-19:30","curso":"ARRANJO","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"SEG - 19:30 - 20:20","capacidade":16,"alunos":2,"cancelamentos":1,"status":"EM ANDAMENTO","professor":"JACKSON DELANO CRUZ LEITE"},{"nome":"2026/1º - AVANÇADO 1 - SEGUNDA - 20:30 - FELIPE NUNES","codigo":"BAN-A1-SEG-20:30","curso":"BANDOLIM","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"SEG - 20:30 - 21:30","capacidade":5,"alunos":3,"cancelamentos":1,"status":"ABERTA","professor":"FELIPE NUNES"},{"nome":"2026/1º - AVANÇADO 2 - TERÇA - 17:30 - FELIPE NUNES","codigo":"BAN-A2-TER-17:30","curso":"BANDOLIM","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"TER - 19:30 - 20:20","capacidade":5,"alunos":2,"cancelamentos":0,"status":"ABERTA","professor":"FELIPE NUNES"},{"nome":"2026/1º - BÁSICO 1 - TERÇA - 18:30 - FELIPE NUNES","codigo":"BAN-B1-TER-18:30","curso":"BANDOLIM","modulo":"BÁSICO 1","unidade":"ICEM-SEDE","horario":"TER - 18:30 - 19:20","capacidade":6,"alunos":6,"cancelamentos":1,"status":"ABERTA","professor":"FELIPE NUNES"},{"nome":"2026/1º - BÁSICO 2 - TERÇA - 19:30 - FELIPE NUNES","codigo":"BAN-B2-TER-19:30","curso":"BANDOLIM","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"TER - 19:30 - 20:20","capacidade":5,"alunos":1,"cancelamentos":0,"status":"ABERTA","professor":"FELIPE NUNES"},{"nome":"2026/1º - FORMANDO - TERÇA - 20:30 - FELIPE NUNES","codigo":"BAN-FOR-TER-20:30","curso":"BANDOLIM","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"TER - 20:30 - 21:20","capacidade":10,"alunos":1,"cancelamentos":0,"status":"ABERTA","professor":"FELIPE NUNES"},{"nome":"2026/1º - INTERMEDIARIO 1 - SEGUNDA - 18:30 - FELIPE NUNES","codigo":"BAN-I1-SEG-18:30","curso":"BANDOLIM","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"SEG - 18:30 - 19:20","capacidade":5,"alunos":3,"cancelamentos":1,"status":"ABERTA","professor":"FELIPE NUNES"},{"nome":"2026/1º - INTERMEDIARIO 2 - SEGUNDA - 19:30 - FELIPE NUNES","codigo":"BAN-I2-SEG-19:30","curso":"BANDOLIM","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"SEG - 19:30 - 20:20","capacidade":5,"alunos":2,"cancelamentos":0,"status":"ABERTA","professor":"FELIPE NUNES"},{"nome":"BLOQUINHO-PERCUSSÃO - SABADO 10H","codigo":"BLOQ-PERC","curso":"BLOQUINHO CORTANDO CEBOLA","modulo":"BLOQUINHO - PERCUSSÃO","unidade":"ICEM-SEDE","horario":"SAB - 10:00 ÀS 12:00","capacidade":40,"alunos":13,"cancelamentos":0,"status":"ABERTA","professor":"EDUARDO MILEN VIÉGAS JÚNIOR"},{"nome":"2026/1º - BLOQUINHO - SABADO -10H","codigo":"BLOQUINHO DE FERIAS","curso":"BLOQUINHO CORTANDO CEBOLA","modulo":"BLOQUINHO","unidade":"ICEM-SEDE","horario":"SAB - 10:00 ÀS 12:00","capacidade":50,"alunos":28,"cancelamentos":3,"status":"FINALIZADA","professor":"EDUARDO MILEN VIÉGAS JÚNIOR"},{"nome":"2026/1º - AVANÇADO - TERÇA - 19:30 - HENRIQUE NETO","codigo":"BOSSA-A-TER-19:30","curso":"PRÁTICA DE CONJUNTO - BOSSA NOVA","modulo":"BOSSA","unidade":"ICEM-SEDE","horario":"TER - 19:30 - 20:20","capacidade":15,"alunos":11,"cancelamentos":2,"status":"ABERTA","professor":"HENRIQUE NETO"},{"nome":"2026/1º - BÁSICO 1 - SEGUNDA - 19:30 - PAULO CÓRDOVA","codigo":"BOSSA-B1-SEG-19:30-PAULO","curso":"PRÁTICA DE CONJUNTO - BOSSA NOVA","modulo":"BOSSA","unidade":"ICEM-SEDE","horario":"SEG - 19:30 - 20:20","capacidade":20,"alunos":6,"cancelamentos":0,"status":"ABERTA","professor":"PAULO CÓRDOVA"},{"nome":"2026/1º - BÁSICO 2 - QUINTA - 19:30 - MATEUS TIMPONI","codigo":"CAJ-B2-QUI-19:30-TIMPONI","curso":"CAJON","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"QUI - 19:30 - 20:20","capacidade":15,"alunos":5,"cancelamentos":1,"status":"EM ANDAMENTO","professor":"MATEUS TIMPONI"},{"nome":"2026/1º - BÁSICO 1 - QUARTA - 20:30 - MÁRCIA TAUIL","codigo":"CAN-B1-QUA-20:30-TAUIL","curso":"CANTO POPULAR","modulo":"BÁSICO 1","unidade":"ICEM-SEDE","horario":"QUA - 20:30 - 21:20","capacidade":11,"alunos":10,"cancelamentos":2,"status":"EM ANDAMENTO","professor":"MÁRCIA TAUIL"},{"nome":"2026/1º - BÁSICO 1 - SEGUNDA - 15:30 - MATHEUS VILANOVA","codigo":"CAN-B1-SEG-15:30-VILANOVA","curso":"PROMO50","modulo":"PROMO50","unidade":"ICEM-SEDE","horario":"SEG - 15:30 - 16:20","capacidade":15,"alunos":7,"cancelamentos":0,"status":"ABERTA","professor":"MATHEUS VILANOVA"},{"nome":"2026/1º - BÁSICO 1 - SEGUNDA - 17:30 - MÁRCIA TAUIL","codigo":"CAN-B1-SEG-17:30-TAUIL","curso":"CANTO POPULAR","modulo":"BÁSICO 1","unidade":"ICEM-SEDE","horario":"SEG - 17:30 - 18:20","capacidade":11,"alunos":8,"cancelamentos":4,"status":"EM ANDAMENTO","professor":"MÁRCIA TAUIL"},{"nome":"2026/1º - BÁSICO 1 - SEGUNDA - 17:30 - MATHEUS VILANOVA","codigo":"CAN-B1-SEG-17:30-VILANOVA","curso":"CANTO POPULAR","modulo":"BÁSICO 1","unidade":"ICEM-SEDE","horario":"SEG - 17:30 - 18:20","capacidade":15,"alunos":6,"cancelamentos":1,"status":"ABERTA","professor":"MATHEUS VILANOVA"},{"nome":"2026/1º - BÁSICO 1 - SEGUNDA - 18:30 - MÁRCIA TAUIL","codigo":"CAN-B1-SEG-18:30-TAUIL","curso":"CANTO POPULAR","modulo":"BÁSICO 1","unidade":"ICEM-SEDE","horario":"SEG - 18:30 - 19:20","capacidade":12,"alunos":10,"cancelamentos":4,"status":"EM ANDAMENTO","professor":"MÁRCIA TAUIL"},{"nome":"2026/1º - BÁSICO 1 - SEGUNDA - 19:30 - MÁRCIA TAUIL","codigo":"CAN-B1-SEG-19:30-TAUIL","curso":"CANTO POPULAR","modulo":"BÁSICO 1","unidade":"ICEM-SEDE","horario":"SEG - 19:30 - 20:20","capacidade":12,"alunos":9,"cancelamentos":5,"status":"EM ANDAMENTO","professor":"MÁRCIA TAUIL"},{"nome":"2026/1º - BÁSICO 1 - SEGUNDA - 19:30 - MATHEUS VILANOVA","codigo":"CAN-B1-SEG-19:30-VILANOVA","curso":"CANTO POPULAR","modulo":"BÁSICO 1","unidade":"ICEM-SEDE","horario":"SEG - 19:30 - 20:20","capacidade":17,"alunos":14,"cancelamentos":2,"status":"ABERTA","professor":"MATHEUS VILANOVA"},{"nome":"2026/1º - BÁSICO 1 - SEXTA - 16:00 - MATHEUS VILANOVA","codigo":"CAN-B1-SEX-16:00-VILANOVA","curso":"CANTO POPULAR","modulo":"BÁSICO 1","unidade":"ICEM-SEDE","horario":"SEX - 16:00 - 16:50","capacidade":15,"alunos":6,"cancelamentos":6,"status":"ABERTA","professor":"MATHEUS VILANOVA"},{"nome":"2026/1º - BÁSICO 2 - QUARTA - 16:30 - MÁRCIA TAUIL","codigo":"CAN-B2-QUA-16:30-TAUIL","curso":"CANTO POPULAR","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"QUA - 16:30 - 17:20","capacidade":10,"alunos":7,"cancelamentos":2,"status":"EM ANDAMENTO","professor":"MÁRCIA TAUIL"},{"nome":"2026/1º - BÁSICO 2 - QUARTA - 18:30 - MÁRCIA TAUIL","codigo":"CAN-B2-QUA-18:30-TAUIL","curso":"CANTO POPULAR","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"QUA - 18:30 - 19:20","capacidade":10,"alunos":8,"cancelamentos":1,"status":"EM ANDAMENTO","professor":"MÁRCIA TAUIL"},{"nome":"2026/1º - BÁSICO 2 - QUINTA - 15:30 - MÁRCIA TAUIL","codigo":"CAN-B2-QUI-15:30-TAUIL","curso":"CANTO POPULAR","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"QUI - 15:30 - 16:20","capacidade":10,"alunos":0,"cancelamentos":1,"status":"EM ANDAMENTO","professor":"MÁRCIA TAUIL"},{"nome":"2026/1º - BÁSICO 2 - QUINTA - 18:30 - MÁRCIA TAUIL","codigo":"CAN-B2-QUI-18:30-TAUIL","curso":"CANTO POPULAR","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"QUI - 18:30 - 19:20","capacidade":10,"alunos":6,"cancelamentos":2,"status":"EM ANDAMENTO","professor":"MÁRCIA TAUIL"},{"nome":"2026/1º - BÁSICO 2 - QUINTA - 20:30 - MÁRCIA TAUIL","codigo":"CAN-B2-QUI-20:30-TAUIL","curso":"CANTO POPULAR","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"QUI - 20:30 - 21:20","capacidade":10,"alunos":8,"cancelamentos":0,"status":"EM ANDAMENTO","professor":"MÁRCIA TAUIL"},{"nome":"2026/1º - BÁSICO 2 - SEGUNDA - 16:30 - MATHEUS VILANOVA","codigo":"CAN-B2-SEG-16:30-VILANOVA","curso":"CANTO POPULAR","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"SEG - 16:30 - 17:20","capacidade":15,"alunos":1,"cancelamentos":1,"status":"ABERTA","professor":"MATHEUS VILANOVA"},{"nome":"2026/1º - BÁSICO 2 - SEGUNDA - 20:30 - MATHEUS VILANOVA","codigo":"CAN-B2-SEG-20:30-VILANOVA","curso":"CANTO POPULAR","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"SEG - 20:30 - 21:30","capacidade":15,"alunos":4,"cancelamentos":2,"status":"ABERTA","professor":"MATHEUS VILANOVA"},{"nome":"2026/1º - BÁSICO 3 - QUARTA - 19:30 - MÁRCIA TAUIL","codigo":"CAN-B3-QUA-19:30-TAUIL","curso":"CANTO POPULAR","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"QUA - 19:30 - 20:20","capacidade":10,"alunos":4,"cancelamentos":0,"status":"EM ANDAMENTO","professor":"MÁRCIA TAUIL"},{"nome":"2026/1º - BÁSICO 3 - QUINTA - 16:30 - MÁRCIA TAUIL","codigo":"CAN-B3-QUI-16:30-TAUIL","curso":"CANTO POPULAR","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"QUI - 16:30 - 17:20","capacidade":10,"alunos":3,"cancelamentos":2,"status":"EM ANDAMENTO","professor":"MÁRCIA TAUIL"},{"nome":"2026/1º - BÁSICO 3 - QUINTA - 17:30 - MÁRCIA TAUIL","codigo":"CAN-B3-QUI-17:30-TAUIL","curso":"CANTO POPULAR","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"QUI - 17:30 - 18:20","capacidade":10,"alunos":3,"cancelamentos":3,"status":"EM ANDAMENTO","professor":"MÁRCIA TAUIL"},{"nome":"2026/1º - BÁSICO 3 - QUINTA - 19:30 - MÁRCIA TAUIL","codigo":"CAN-B3-QUI-19:30-TAUIL","curso":"CANTO POPULAR","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"QUI - 19:30 - 20:20","capacidade":10,"alunos":7,"cancelamentos":0,"status":"EM ANDAMENTO","professor":"MÁRCIA TAUIL"},{"nome":"2026/1º - BÁSICO 3 - SEGUNDA - 18:30 - MATHEUS VILANOVA","codigo":"CAN-B3-SEG-18:30-VILANOVA","curso":"CANTO POPULAR","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"SEG - 18:30 - 19:20","capacidade":15,"alunos":2,"cancelamentos":1,"status":"ABERTA","professor":"MATHEUS VILANOVA"},{"nome":"2026/1º - BÁSICO 4 - SEXTA - 15:00 - MATHEUS VILANOVA","codigo":"CAN-B4-SEX-15:00-VILANOVA","curso":"CANTO POPULAR","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"SEX - 15:00 - 15:00","capacidade":15,"alunos":2,"cancelamentos":1,"status":"ABERTA","professor":"MATHEUS VILANOVA"},{"nome":"2026/1º - BÁSICO 1 - QUARTA - 19:30 - MÁRCIO/VICTOR","codigo":"CAV-B1-QUA-19:30-MARCIO","curso":"CAVAQUINHO","modulo":"BÁSICO 1","unidade":"ICEM-SEDE","horario":"QUA - 19:30 - 20:20","capacidade":10,"alunos":2,"cancelamentos":3,"status":"ABERTA","professor":"MÁRCIO MARINHO"},{"nome":"2026/1º - BÁSICO 1 - QUARTA - 20:30 - WILLIAM","codigo":"CAV-B1-QUA-20:30-WILLIAM","curso":"CAVAQUINHO","modulo":"BÁSICO 1","unidade":"ICEM-SEDE","horario":"QUA - 20:30 - 21:20","capacidade":10,"alunos":3,"cancelamentos":0,"status":"ABERTA","professor":"WILLIAM"},{"nome":"2026/1º - BÁSICO 1 - SEGUNDA - 19:30 - MÁRCIO MARINHO","codigo":"CAV-B1-SEG-19:30","curso":"CAVAQUINHO","modulo":"BÁSICO 1","unidade":"ICEM-SEDE","horario":"SEG - 19:30 - 20:20","capacidade":10,"alunos":2,"cancelamentos":0,"status":"ABERTA","professor":"MÁRCIO MARINHO"},{"nome":"2026/1º - BÁSICO 1 - TERÇA - 18:30 - WILLIAM","codigo":"CAV-B1-TER-18:30-WILLIAM","curso":"CAVAQUINHO","modulo":"BÁSICO 1","unidade":"ICEM-SEDE","horario":"TER - 18:30 - 19:20","capacidade":10,"alunos":5,"cancelamentos":3,"status":"ABERTA","professor":"WILLIAM"},{"nome":"2026/1º - BÁSICO 2 - QUARTA - 18:30 - MÁRCIO/VICTOR","codigo":"CAV-B2-QUA-18:30-MARCIO","curso":"CAVAQUINHO","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"QUA - 18:30 - 19:20","capacidade":10,"alunos":2,"cancelamentos":2,"status":"ABERTA","professor":"MÁRCIO MARINHO"},{"nome":"2026/1º - BÁSICO 2 - QUARTA - 20:30 - MÁRCIO/VICTOR","codigo":"CAV-B2-QUA-20:30-MARCIO","curso":"CAVAQUINHO","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"QUA - 20:30 - 21:20","capacidade":10,"alunos":1,"cancelamentos":1,"status":"ABERTA","professor":"MÁRCIO MARINHO"},{"nome":"2026/1º - BÁSICO 2 - TERÇA - 19:30 - WILLIAM","codigo":"CAV-B2-TER-19:30-WILLIAM","curso":"CAVAQUINHO","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"TER - 19:30 - 20:20","capacidade":10,"alunos":8,"cancelamentos":1,"status":"ABERTA","professor":"WILLIAM"},{"nome":"2026/1º - BÁSICO 3 - TERÇA - 15:30 - NELSON SERRA","codigo":"CAV-B3-TER-15:30-NELSON","curso":"CAVAQUINHO","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"TER - 15:30 - 16:20","capacidade":8,"alunos":4,"cancelamentos":2,"status":"ABERTA","professor":"NELSON SERRA"},{"nome":"2026/1º - BÁSICO 3 - TERÇA - 20:30 - WILLIAM","codigo":"CAV-B3-TER-20:30-WILLIAM","curso":"CAVAQUINHO","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"TER - 20:30 - 21:20","capacidade":10,"alunos":4,"cancelamentos":0,"status":"ABERTA","professor":"WILLIAM"},{"nome":"2026/1º - BÁSICO 4 - TERÇA - 17:30 - NELSON SERRA","codigo":"CAV-B4-TER-17:30-NELSON","curso":"CAVAQUINHO","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"TER - 17:30 - 18:20","capacidade":10,"alunos":6,"cancelamentos":2,"status":"ABERTA","professor":"NELSON SERRA"},{"nome":"2026/1º - BÁSICO 5 - TERÇA - 16:30 - NELSON SERRA","codigo":"CAV-B5-TER-16:30-NELSON","curso":"CAVAQUINHO","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"TER - 16:30 - 17:20","capacidade":8,"alunos":3,"cancelamentos":1,"status":"ABERTA","professor":"NELSON SERRA"},{"nome":"2026/1º - BÁSICO 6 - QUARTA - 17:30 - MÁRCIO/VICTOR","codigo":"CAV-B6-QUA-17:30-MARCIO","curso":"CAVAQUINHO","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"QUA - 17:30 - 18:20","capacidade":10,"alunos":1,"cancelamentos":1,"status":"ABERTA","professor":"MÁRCIO MARINHO"},{"nome":"2026/1º - BÁSICO 7 - QUARTA - 19:30 - WILLIAM","codigo":"CAV-B7-QUA-19:30-WILLIAM","curso":"CAVAQUINHO","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"QUA - 19:30 - 20:20","capacidade":10,"alunos":4,"cancelamentos":0,"status":"ABERTA","professor":"WILLIAM"},{"nome":"2026/1º - SAMBA - BÁSICO 1 - SEGUNDA - 18:30 - MÁRCIO MARINHO","codigo":"CAV-SAM-B1-SEG-18:30","curso":"CAVAQUINHO","modulo":"BÁSICO 1","unidade":"ICEM-SEDE","horario":"SEG - 18:30 - 19:20","capacidade":10,"alunos":6,"cancelamentos":3,"status":"ABERTA","professor":"MÁRCIO MARINHO"},{"nome":"2026/1º - SAMBA - BÁSICO 2 - SEGUNDA - 17:30 - MÁRCIO MARINHO","codigo":"CAV-SAM-B2-SEG-17:30","curso":"CAVAQUINHO","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"SEG - 17:30 - 18:20","capacidade":10,"alunos":1,"cancelamentos":0,"status":"ABERTA","professor":"MÁRCIO MARINHO"},{"nome":"2026/1º - CFC - BÁSICO 1 - SEGUNDA - 15:30 - JOÃO DIAS","codigo":"CFC-B1-SEG-15:30","curso":"CORDAS FRICCIONADAS NO CHORO","modulo":"BÁSICO 1","unidade":"ICEM-SEDE","horario":"SEG - 15:30 - 16:20","capacidade":10,"alunos":1,"cancelamentos":2,"status":"EM ANDAMENTO","professor":"JOÃO DIAS"},{"nome":"2026/1º - AVANÇADO - TERÇA - 16:00 - ARTHUR REIS","codigo":"CHORO-A-TER-16:00","curso":"PRÁTICA DE CONJUNTO - CHORO","modulo":"CHORO","unidade":"ICEM-SEDE","horario":"TER - 16:00 - 17:00","capacidade":15,"alunos":5,"cancelamentos":0,"status":"ABERTA","professor":"ARTHUR REIS"},{"nome":"2026/1º - INTERMEDIÁRIO - QUINTA - 18:30 - ARTHUR REIS","codigo":"CHORO-I-QUI-18:30-ARTHUR","curso":"PRÁTICA DE CONJUNTO - CHORO","modulo":"CHORO","unidade":"ICEM-SEDE","horario":"QUI - 18:30 - 19:20","capacidade":15,"alunos":11,"cancelamentos":2,"status":"ABERTA","professor":"ARTHUR REIS"},{"nome":"2026/1º - AVANÇADO - SEGUNDA - 17:30 - JACKSON DELANO","codigo":"CLA-A-SEG-17:30","curso":"CLARINETA","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"SEG - 17:30 - 18:20","capacidade":5,"alunos":3,"cancelamentos":0,"status":"EM ANDAMENTO","professor":"JACKSON DELANO CRUZ LEITE"},{"nome":"2026/1º - BÁSICO 1 - TERÇA - 17:30 - JACKSON DELANO","codigo":"CLA-B1-TER-17:30","curso":"CLARINETA","modulo":"BÁSICO 1","unidade":"ICEM-SEDE","horario":"TER - 17:30 - 18:20","capacidade":9,"alunos":6,"cancelamentos":4,"status":"EM ANDAMENTO","professor":"JACKSON DELANO CRUZ LEITE"},{"nome":"2026/1º - BÁSICO 3 - TERÇA - 18:30 - JACKSON DELANO","codigo":"CLA-B3-TER-18:30","curso":"CLARINETA","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"TER - 18:30 - 19:20","capacidade":5,"alunos":1,"cancelamentos":1,"status":"EM ANDAMENTO","professor":"JACKSON DELANO CRUZ LEITE"},{"nome":"2026/1º - BÁSICO 3 - TERÇA - 19:30 - JACKSON DELANO","codigo":"CLA-B3-TER-19:30","curso":"CLARINETA","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"TER - 19:30 - 20:20","capacidade":5,"alunos":2,"cancelamentos":0,"status":"EM ANDAMENTO","professor":"JACKSON DELANO CRUZ LEITE"},{"nome":"2026/1º - INTERMEDIÁRIO - SEGUNDA - 18:30 - JACKSON DELANO","codigo":"CLA-I-SEG-18:30","curso":"CLARINETA","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"SEG - 18:30 - 19:20","capacidade":5,"alunos":2,"cancelamentos":0,"status":"EM ANDAMENTO","professor":"JACKSON DELANO CRUZ LEITE"},{"nome":"2026/1º - BÁSICO 1 - QUINTA - 17:30 - PAULO CÓRDOVA","codigo":"COM-B1-QUI-17:30","curso":"COMPOSIÇAO","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"QUI - 17:30 - 18:20","capacidade":20,"alunos":0,"cancelamentos":0,"status":"CANCELADA","professor":"PAULO CÓRDOVA"},{"nome":"2026/1º - BÁSICO 1 - QUINTA - 18:30 - PAULO CÓRDOVA","codigo":"COM-B1-QUI-18:30","curso":"COMPOSIÇAO","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"QUI - 18:30 - 19:20","capacidade":20,"alunos":2,"cancelamentos":1,"status":"ABERTA","professor":"PAULO CÓRDOVA"},{"nome":"2026/1º - CONTRA PONTO - TERÇA - 18:30 - HENRIQUE NETO","codigo":"CONTRA-TER-18:30","curso":"CONTRA PONTO","modulo":"CONTRA PONTO","unidade":"ICEM-SEDE","horario":"SEG - 18:30 - 19:20","capacidade":12,"alunos":7,"cancelamentos":2,"status":"ABERTA","professor":"HENRIQUE NETO"},{"nome":"EXCLUIR","codigo":"EXC","curso":"FLAUTA TRANSVERSAL","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"TER - 10:30 - 11:20","capacidade":3,"alunos":0,"cancelamentos":0,"status":"CANCELADA","professor":"DIANA MOTA"},{"nome":"2026/1º - BÁSICO 1 - QUARTA - 09:40 - DIANA MOTA","codigo":"FLA-B1-QUA-09:40","curso":"FLAUTA TRANSVERSAL","modulo":"BÁSICO 1","unidade":"ICEM-SEDE","horario":"QUA - 09:40 - 10:30","capacidade":3,"alunos":3,"cancelamentos":2,"status":"ABERTA","professor":"DIANA MOTA"},{"nome":"2026/1º - BÁSICO 1 - QUARTA - 15:40 - DIANA MOTA","codigo":"FLA-B1-QUA-15:40","curso":"FLAUTA TRANSVERSAL","modulo":"BÁSICO 1","unidade":"ICEM-SEDE","horario":"QUA - 15:40 - 16:30","capacidade":3,"alunos":2,"cancelamentos":2,"status":"ABERTA","professor":"DIANA MOTA"},{"nome":"2026/1º - BÁSICO 1 - QUARTA - 17:20 - DIANA MOTA","codigo":"FLA-B1-QUA-17:20","curso":"FLAUTA TRANSVERSAL","modulo":"BÁSICO 1","unidade":"ICEM-SEDE","horario":"QUA-17:20-18:10","capacidade":3,"alunos":3,"cancelamentos":0,"status":"EM ANDAMENTO","professor":"DIANA MOTA"},{"nome":"2026/1º - BÁSICO 1 - TERÇA - 11:20 - DIANA MOTA","codigo":"FLA-B1-TER-11:20","curso":"FLAUTA TRANSVERSAL","modulo":"BÁSICO 1","unidade":"ICEM-SEDE","horario":"TER - 11:20 - 12:10","capacidade":3,"alunos":3,"cancelamentos":1,"status":"EM ANDAMENTO","professor":"DIANA MOTA"},{"nome":"2026/1º - BÁSICO 2 - QUARTA - 16:30 - DIANA MOTA","codigo":"FLA-B2-QUA-16:30","curso":"FLAUTA TRANSVERSAL","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"QUA - 16:30 - 17:20","capacidade":3,"alunos":2,"cancelamentos":2,"status":"EM ANDAMENTO","professor":"DIANA MOTA"},{"nome":"2026/1º - BÁSICO 2 - TERÇA - 08:50 - DIANA MOTA","codigo":"FLA-B2-TER-08:50","curso":"FLAUTA TRANSVERSAL","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"TER - 08:50 - 09:40","capacidade":3,"alunos":3,"cancelamentos":0,"status":"EM ANDAMENTO","professor":"DIANA MOTA"},{"nome":"2026/1º - BÁSICO 2 - TERÇA - 09:40 - DIANA MOTA","codigo":"FLA-B2-TER-09:40","curso":"FLAUTA TRANSVERSAL","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"TER - 09:40 - 10:30","capacidade":3,"alunos":1,"cancelamentos":1,"status":"ABERTA","professor":"DIANA MOTA"},{"nome":"2026/1º - BÁSICO 2 - TERÇA - 12:10 - DIANA MOTA","codigo":"FLA-B2-TER-12:10","curso":"FLAUTA TRANSVERSAL","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"TER - 12:10 - 13:00","capacidade":4,"alunos":3,"cancelamentos":1,"status":"EM ANDAMENTO","professor":"DIANA MOTA"},{"nome":"2026/1º - BÁSICO 2 - TERÇA - 20:40 - DIANA MOTA","codigo":"FLA-B2-TER-20:40","curso":"FLAUTA TRANSVERSAL","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"TER - 20:40 - 21:30","capacidade":3,"alunos":1,"cancelamentos":1,"status":"ABERTA","professor":"DIANA MOTA"},{"nome":"2026/1º - BÁSICO 3 - QUARTA - 08:50 - DIANA MOTA","codigo":"FLA-B3-QUA-08:50","curso":"FLAUTA TRANSVERSAL","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"QUA - 08:50 - 09:40","capacidade":3,"alunos":3,"cancelamentos":0,"status":"ABERTA","professor":"DIANA MOTA"},{"nome":"2026/1º - BÁSICO 3 - TERÇA - 10:30 - DIANA MOTA","codigo":"FLA-B3-TER-10:30","curso":"FLAUTA TRANSVERSAL","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"TER - 10:30 - 11:20","capacidade":3,"alunos":2,"cancelamentos":0,"status":"ABERTA","professor":"DIANA MOTA"},{"nome":"2026/1º - BÁSICO 3 - TERÇA - 20:40 - DIANA MOTA","codigo":"FLA-B3-TER-20:40","curso":"FLAUTA TRANSVERSAL","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"TER - 20:40 - 21:30","capacidade":3,"alunos":3,"cancelamentos":0,"status":"ABERTA","professor":"DIANA MOTA"},{"nome":"2026/1º - BÁSICO 4 - QUARTA - 08:00 - DIANA MOTA","codigo":"FLA-B4-QUA-08:00","curso":"FLAUTA TRANSVERSAL","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"QUA - 08:00 - 08:50","capacidade":3,"alunos":3,"cancelamentos":1,"status":"ABERTA","professor":"DIANA MOTA"},{"nome":"2026/1º - BÁSICO 4 - TERÇA - 14:00 - DIANA MOTA","codigo":"FLA-B4-TER-14:00","curso":"FLAUTA TRANSVERSAL","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"TER - 14:00 - 14:50","capacidade":3,"alunos":1,"cancelamentos":0,"status":"ABERTA","professor":"DIANA MOTA"},{"nome":"2026/1º - BÁSICO 4 - TERÇA - 16:30 - DIANA MOTA","codigo":"FLA-B4-TER-16:30","curso":"FLAUTA TRANSVERSAL","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"TER - 16:30 - 17:20","capacidade":3,"alunos":3,"cancelamentos":0,"status":"ABERTA","professor":"DIANA MOTA"},{"nome":"2026/1º - BÁSICO 5 - TERÇA - 15:40 - DIANA MOTA","codigo":"FLA-B5-TER-15:40","curso":"FLAUTA TRANSVERSAL","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"TER - 15:40 - 16:30","capacidade":3,"alunos":3,"cancelamentos":0,"status":"ABERTA","professor":"DIANA MOTA"},{"nome":"2026/1º - BÁSICO 6 - TERÇA - 14:50 - DIANA MOTA","codigo":"FLA-B6-TER-14:50","curso":"FLAUTA TRANSVERSAL","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"TER - 14:50 - 15:40","capacidade":3,"alunos":2,"cancelamentos":0,"status":"ABERTA","professor":"DIANA MOTA"},{"nome":"2026/1º - BÁSICO 6 - TERÇA - 17:20 - DIANA MOTA","codigo":"FLA-B6-TER-17:20","curso":"FLAUTA TRANSVERSAL","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"TER - 17:20 - 18:10","capacidade":3,"alunos":3,"cancelamentos":0,"status":"EM ANDAMENTO","professor":"DIANA MOTA"},{"nome":"2026/1º - EXCLUSIVO - TERÇA - 08:00 - DIANA MOTA","codigo":"FLA-E-TER-08:00","curso":"FLAUTA TRANSVERSAL","modulo":"EXCLUSIVO","unidade":"ICEM-SEDE","horario":"TER - 08:00 - 08:50","capacidade":1,"alunos":1,"cancelamentos":0,"status":"EM ANDAMENTO","professor":"DIANA MOTA"},{"nome":"2026/1º - EXCLUSIVO - TER - 14:50 - DIANA MOTA","codigo":"FLA-E-TER-14:50","curso":"FLAUTA TRANSVERSAL","modulo":"EXCLUSIVO","unidade":"ICEM-SEDE","horario":"TER - 14:50 - 15:40","capacidade":2,"alunos":1,"cancelamentos":0,"status":"ABERTA","professor":"DIANA MOTA"},{"nome":"2026/1º - EXCLUSIVO - TERÇA - 18:10 - DIANA MOTA","codigo":"FLA-E-TER-18:10","curso":"FLAUTA TRANSVERSAL","modulo":"EXCLUSIVO","unidade":"ICEM-SEDE","horario":"TER - 18:10 - 19:00","capacidade":1,"alunos":1,"cancelamentos":0,"status":"ABERTA","professor":"DIANA MOTA"},{"nome":"2026/1º - AVANÇADO 1 - QUARTA - 17:30 - RAFAEL ALABARCE","codigo":"GAI-A1-QUA-17:30-RAFAEL","curso":"GAITA CROMATICA","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"QUA - 17:30 - 18:20","capacidade":6,"alunos":0,"cancelamentos":0,"status":"CANCELADA","professor":"RAFAEL ALABARCE"},{"nome":"GAITA CROMATICA - BÁSICO 1 - QUARTA - 14:00 - PAULO LESSA","codigo":"GAI-B1-QUA-14:00-LESSA","curso":"GAITA CROMATICA","modulo":"BÁSICO 1","unidade":"ICEM-SEDE","horario":"QUA - 14:00 - 14:50","capacidade":6,"alunos":3,"cancelamentos":1,"status":"EM ANDAMENTO","professor":"PAULO LESSA"},{"nome":"2026/1º - BÁSICO 1 - QUARTA - 19:30 - RAFAEL ALABARCE","codigo":"GAI-B1-QUA-19:30-RAFAEL","curso":"GAITA CROMATICA","modulo":"BÁSICO 1","unidade":"ICEM-SEDE","horario":"QUA - 19:30 - 20:20","capacidade":6,"alunos":3,"cancelamentos":0,"status":"ABERTA","professor":"RAFAEL ALABARCE"},{"nome":"2026/1º - BÁSICO 2 - QUARTA - 13:00 - PAULO LESSA","codigo":"GAI-B2-QUA-13:00-LESSA","curso":"GAITA CROMATICA","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"QUA - 13:00 - 13:50","capacidade":6,"alunos":2,"cancelamentos":1,"status":"EM ANDAMENTO","professor":"PAULO LESSA"},{"nome":"2026/1º - BÁSICO 3 - QUARTA - 18:30 - PAULO LESSA","codigo":"GAI-B3-QUA-18:30-LESSA","curso":"GAITA CROMATICA","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"QUA - 18:30 - 19:20","capacidade":6,"alunos":2,"cancelamentos":0,"status":"EM ANDAMENTO","professor":"PAULO LESSA"},{"nome":"2026/1º - BÁSICO 3 - QUARTA - 18:30 - RAFAEL ALABARCE","codigo":"GAI-B3-QUA-18:30-RAFAEL","curso":"GAITA CROMATICA","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"QUA - 18:30 - 19:20","capacidade":6,"alunos":4,"cancelamentos":0,"status":"ABERTA","professor":"RAFAEL ALABARCE"},{"nome":"2026/1º - BÁSICO 4 - QUARTA - 17:30 - PAULO LESSA","codigo":"GAI-B4-QUA-17:30-LESSA","curso":"GAITA CROMATICA","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"QUA - 17:30 - 18:20","capacidade":6,"alunos":3,"cancelamentos":0,"status":"EM ANDAMENTO","professor":"PAULO LESSA"},{"nome":"2026/1º - BÁSICO 6 - QUARTA - 19:30 - PAULO LESSA","codigo":"GAI-B6-QUA-19:30-LESSA","curso":"GAITA CROMATICA","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"QUA - 19:30 - 20:20","capacidade":6,"alunos":2,"cancelamentos":3,"status":"EM ANDAMENTO","professor":"PAULO LESSA"},{"nome":"2026/1º - INTERMEDIARIO 2 - QUARTA - 16:30 - PAULO LESSA","codigo":"GAI-I2-QUA-16:30-LESSA","curso":"GAITA CROMATICA","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"QUA - 16:30 - 17:20","capacidade":6,"alunos":4,"cancelamentos":0,"status":"EM ANDAMENTO","professor":"PAULO LESSA"},{"nome":"2026/1º - HARMÔNICA - QUARTA - 20:30 - PAULO LESSA","codigo":"HARMONICA-QUA-20:30","curso":"ORQUESTRA DE HARMÔNICA","modulo":"2026/1º - HARMÔNICA - QUARTA - 20:30 - PAULO LESSA","unidade":"ICEM-SEDE","horario":"QUA - 20:30 - 21:20","capacidade":20,"alunos":10,"cancelamentos":4,"status":"EM ANDAMENTO","professor":"PAULO LESSA"},{"nome":"2026/1º - BÁSICO 1 - SEXTA - 17:00 - IGNACIO GOMEZ","codigo":"INF- V6-B1-SEX-17:00-IGNACIO","curso":"VIOLÃO CRIANÇA","modulo":"INFANTIL","unidade":"ICEM-SEDE","horario":"SEX - 17:00 - 17:50","capacidade":6,"alunos":3,"cancelamentos":0,"status":"ABERTA","professor":"IGNACIO GOMEZ"},{"nome":"2026/1º - A PARTIR DOS 5 ANOS - SEXTA - 15:00 - MERIELE SANTANA","codigo":"INF-INI-MUS-15:00","curso":"INICIAÇÃO MUSICAL","modulo":"INICIAÇÃO MUSICAL","unidade":"ICEM-SEDE","horario":"SEX - 15:00 - 15:00","capacidade":10,"alunos":3,"cancelamentos":0,"status":"ABERTA","professor":"MERIELE SANTANA"},{"nome":"2026/1º - 1 & 2 ANOS - SEXTA - 09:00 - IGNACIO GOMEZ","codigo":"INF-MUS-1&2-SEX-09:00","curso":"MUSICALIZAÇÃO 1 A 5 ANOS","modulo":"INFANTIL","unidade":"ICEM-SEDE","horario":"SEX - 09:00 - 09:50","capacidade":6,"alunos":0,"cancelamentos":2,"status":"ABERTA","professor":"IGNACIO GOMEZ"},{"nome":"2026/1º - 1 & 2 ANOS - SÁBADO - 09:00 - IGNACIO GOMEZ","codigo":"INF-MUS-1-SAB-09:00","curso":"MUSICALIZAÇÃO 1 A 5 ANOS","modulo":"INFANTIL","unidade":"ICEM-SEDE","horario":"SAB - 09:00 ÀS 09:40","capacidade":6,"alunos":2,"cancelamentos":0,"status":"ABERTA","professor":"IGNACIO GOMEZ"},{"nome":"2026/1º - 3 ANOS - SÁBADO - 09:40 - IGNACIO GOMEZ","codigo":"INF-MUS-3-SAB-09:40","curso":"MUSICALIZAÇÃO 1 A 5 ANOS","modulo":"INFANTIL","unidade":"ICEM-SEDE","horario":"SAB - 09:40 ÀS 10:20","capacidade":6,"alunos":3,"cancelamentos":2,"status":"ABERTA","professor":"IGNACIO GOMEZ"},{"nome":"2026/1º - 3,4,5 ANOS - SEXTA - 15:00 - IGNACIO GOMEZ","codigo":"INF-MUS-3-SEX-15:00","curso":"MUSICALIZAÇÃO 1 A 5 ANOS","modulo":"INFANTIL","unidade":"ICEM-SEDE","horario":"SEX - 15:00 - 15:00","capacidade":6,"alunos":0,"cancelamentos":1,"status":"FINALIZADA","professor":"IGNACIO GOMEZ"},{"nome":"2026/1º - 4 ANOS - SÁBADO - 10:20 - IGNACIO GOMEZ","codigo":"INF-MUS-4-SAB-10:20","curso":"MUSICALIZAÇÃO 1 A 5 ANOS","modulo":"INFANTIL","unidade":"ICEM-SEDE","horario":"SAB - 10:20 ÀS 11:00","capacidade":6,"alunos":4,"cancelamentos":0,"status":"ABERTA","professor":"IGNACIO GOMEZ"},{"nome":"2026/1º - 5 ANOS - SÁBADO - 11:20 - IGNACIO GOMEZ","codigo":"INF-MUS-5-SAB-11:20","curso":"MUSICALIZAÇÃO 1 A 5 ANOS","modulo":"INFANTIL","unidade":"ICEM-SEDE","horario":"SAB - 11:20 ÀS 12:00","capacidade":6,"alunos":5,"cancelamentos":0,"status":"ABERTA","professor":"IGNACIO GOMEZ"},{"nome":"2026/1º - 6 & 7 ANOS - QUINTA - 16:00 - JESUWAY LEÃO","codigo":"INF-MUS-QUI-16:00","curso":"MUSICALIZAÇÃO 6 & 7 ANOS","modulo":"INFANTIL","unidade":"ICEM-SEDE","horario":"QUI - 16:00 - 16:50","capacidade":6,"alunos":0,"cancelamentos":0,"status":"FINALIZADA","professor":"JESUWAY LEÃO"},{"nome":"2026/1º - A PARTIR DOS 6 ANOS - SEXTA - 16:00 - MERIELE SANTANA","codigo":"INF-PER-VOZ-16:00","curso":"PERCUSSÃO E VOZ PARA CRIANÇAS","modulo":"INF-MEIRIELE","unidade":"ICEM-SEDE","horario":"SEX - 16:00 - 16:50","capacidade":16,"alunos":7,"cancelamentos":2,"status":"ABERTA","professor":"MERIELE SANTANA"},{"nome":"2026/1º - 6 & 7 ANOS - SEXTA - 10:00 - JESUWAY LEÃO","codigo":"INF-PRÉ-6&7-SEX-10:00","curso":"PRÉ-INSTRUMENTAL","modulo":"INFANTIL","unidade":"ICEM-SEDE","horario":"SEX - 10:00 - 10:50","capacidade":5,"alunos":4,"cancelamentos":1,"status":"ABERTA","professor":"JESUWAY LEÃO"},{"nome":"2026/1º - 6 & 7 ANOS - SEXTA - 15:00 - JESUWAY LEÃO","codigo":"INF-PRÉ-6&7-SEX-15:00","curso":"PRÉ-INSTRUMENTAL","modulo":"INFANTIL","unidade":"ICEM-SEDE","horario":"SEX - 15:00 - 15:00","capacidade":5,"alunos":0,"cancelamentos":0,"status":"ABERTA","professor":"JESUWAY LEÃO"},{"nome":"2026/1º - 8 ANOS INICIADO - QUINTA - 11:00 - JESUWAY LEÃO","codigo":"INF-TEC-QUI-11:00","curso":"TECLADO - INFANTIL","modulo":"INFANTIL","unidade":"ICEM-SEDE","horario":"QUI - 11:00 - 11:50","capacidade":5,"alunos":0,"cancelamentos":0,"status":"ABERTA","professor":"JESUWAY LEÃO"},{"nome":"2026/1º - 8 ANOS INICIANTE - QUINTA - 15:00 - JESUWAY LEÃO","codigo":"INF-TEC-QUI-15:00","curso":"TECLADO - INFANTIL","modulo":"INFANTIL","unidade":"ICEM-SEDE","horario":"QUI - 15:00 - 15:50","capacidade":5,"alunos":4,"cancelamentos":0,"status":"ABERTA","professor":"JESUWAY LEÃO"},{"nome":"2026/1º - 8 ANOS INICIADO - QUINTA - 16:50 - JESUWAY LEÃO","codigo":"INF-TEC-QUI-16:50","curso":"TECLADO - INFANTIL","modulo":"INFANTIL","unidade":"ICEM-SEDE","horario":"QUI - 16:50 - 17:40","capacidade":5,"alunos":4,"cancelamentos":1,"status":"ABERTA","professor":"JESUWAY LEÃO"},{"nome":"2026/1º - 8 ANOS INICIADO - SEXTA - 09:00 - JESUWAY LEÃO","codigo":"INF-TEC-SEX-09:00","curso":"TECLADO - INFANTIL","modulo":"INFANTIL","unidade":"ICEM-SEDE","horario":"SEX - 09:00 - 09:50","capacidade":5,"alunos":4,"cancelamentos":1,"status":"ABERTA","professor":"JESUWAY LEÃO"},{"nome":"2026/1º - 8 ANOS INICIANTE - SEXTA - 11:00 - JESUWAY LEÃO","codigo":"INF-TEC-SEX-11:00","curso":"TECLADO - INFANTIL","modulo":"INFANTIL","unidade":"ICEM-SEDE","horario":"SEX - 11:00 - 11:50","capacidade":5,"alunos":5,"cancelamentos":1,"status":"ABERTA","professor":"JESUWAY LEÃO"},{"nome":"2026/1º - 8 ANOS INICIANTE - SEXTA - 16:00 - JESUWAY LEÃO","codigo":"INF-TEC-SEX-16:00","curso":"TECLADO - INFANTIL","modulo":"INFANTIL","unidade":"ICEM-SEDE","horario":"SEX - 16:00 - 16:50","capacidade":5,"alunos":4,"cancelamentos":2,"status":"ABERTA","professor":"JESUWAY LEÃO"},{"nome":"2026/1º - 8 ANOS INICIADO - SEXTA - 17:00 - JESUWAY LEÃO","codigo":"INF-TEC-SEX-17:00","curso":"TECLADO - INFANTIL","modulo":"INFANTIL","unidade":"ICEM-SEDE","horario":"SEX - 17:00 - 17:50","capacidade":5,"alunos":1,"cancelamentos":0,"status":"ABERTA","professor":"JESUWAY LEÃO"},{"nome":"2026/1º - BÁSICO 1 - SEXTA - 15:00 - LUCIANA CAVALCANTI","codigo":"INF-V6-B1-SEX-15:00-LUCIANA","curso":"VIOLÃO CRIANÇA","modulo":"INFANTIL","unidade":"ICEM-SEDE","horario":"SEX - 15:00 - 15:00","capacidade":6,"alunos":6,"cancelamentos":0,"status":"ABERTA","professor":"LUCIANA CAVALCANTI"},{"nome":"2026/1º - BÁSICO 2 - SEXTA - 16:00 - LUCIANA CAVALCANTI","codigo":"INF-V6-B2-SEX-16:00-LUCIANA","curso":"VIOLÃO CRIANÇA","modulo":"INFANTIL","unidade":"ICEM-SEDE","horario":"SEX - 16:00 - 16:50","capacidade":6,"alunos":4,"cancelamentos":0,"status":"ABERTA","professor":"LUCIANA CAVALCANTI"},{"nome":"2026/1º - BÁSICO 3 - SEXTA - 10:00 - IGNACIO GOMEZ","codigo":"INF-V6-B3-SEX-10:00-IGNACIO","curso":"VIOLÃO CRIANÇA","modulo":"INFANTIL","unidade":"ICEM-SEDE","horario":"SEX - 10:00 - 10:50","capacidade":6,"alunos":0,"cancelamentos":1,"status":"ABERTA","professor":"IGNACIO GOMEZ"},{"nome":"2026/1º - BÁSICO 3 - SEXTA - 14:00 - IGNACIO GOMEZ","codigo":"INF-V6-B3-SEX-14:00-IGNACIO","curso":"VIOLÃO CRIANÇA","modulo":"INFANTIL","unidade":"ICEM-SEDE","horario":"SEX - 14:00 - 14:50","capacidade":6,"alunos":3,"cancelamentos":0,"status":"ABERTA","professor":"IGNACIO GOMEZ"},{"nome":"2026/1º - BÁSICO 3 - SEXTA - 14:00 - LUCIANA CAVALCANTI","codigo":"INF-V6-B3-SEX-14:00-LUCIANA","curso":"VIOLÃO CRIANÇA","modulo":"INFANTIL","unidade":"ICEM-SEDE","horario":"SEX - 14:00 - 14:50","capacidade":6,"alunos":1,"cancelamentos":1,"status":"ABERTA","professor":"LUCIANA CAVALCANTI"},{"nome":"2026/1º - BÁSICO 7 - SEXTA - 16:00 - IGNACIO GOMEZ","codigo":"INF-V6-B7-SEX-16:00-IGNACIO","curso":"VIOLÃO CRIANÇA","modulo":"INFANTIL","unidade":"ICEM-SEDE","horario":"SEX - 16:00 - 16:50","capacidade":6,"alunos":2,"cancelamentos":0,"status":"ABERTA","professor":"IGNACIO GOMEZ"},{"nome":"2026/1º - INTERMEDIÁRIO - SEGUNDA - 16:30 - JOÃO DIAS","codigo":"INF-VIO-I-SEG-16:30","curso":"VIOLINO JUVENIL","modulo":"INFANTIL","unidade":"ICEM-SEDE","horario":"SEG - 16:30 - 17:20","capacidade":4,"alunos":1,"cancelamentos":0,"status":"EM ANDAMENTO","professor":"JOÃO DIAS"},{"nome":"2026/1º - INTERMEDIÁRIO - SEGUNDA - 18:30 - JOÃO DIAS","codigo":"INF-VIO-I-SEG-18:30","curso":"VIOLINO JUVENIL","modulo":"INFANTIL","unidade":"ICEM-SEDE","horario":"SEG - 18:30 - 19:20","capacidade":4,"alunos":0,"cancelamentos":0,"status":"ABERTA","professor":"JOÃO DIAS"},{"nome":"INTENSIVO DE CHORO 2026","codigo":"INTENSIVO-2026","curso":"INTENSIVO DE CHORO","modulo":"INTENSIVO DE CHORO","unidade":"ICEM-SEDE","horario":"INT","capacidade":50,"alunos":35,"cancelamentos":1,"status":"FINALIZADA","professor":"JACKSON DELANO CRUZ LEITE"},{"nome":"2026/1º - LIVRE - TERÇA - 19:00 - DIANA MOTA","codigo":"ORQ-FLA-L-TER-19:00","curso":"ORQUESTRA DE FLAUTA","modulo":"ORQUESTRA DE FLAUTA","unidade":"ICEM-SEDE","horario":"TER - 19:00 - 20:00","capacidade":20,"alunos":6,"cancelamentos":2,"status":"ABERTA","professor":"DIANA MOTA"},{"nome":"2026/1º - LIVRE - TERÇA - 19:40 - DIANA MOTA","codigo":"ORQ-FLA-L-TER-19:40","curso":"ORQUESTRA DE FLAUTA","modulo":"ORQUESTRA DE FLAUTA","unidade":"ICEM-SEDE","horario":"TER - 19:50 - 20:30","capacidade":50,"alunos":5,"cancelamentos":0,"status":"ABERTA","professor":"DIANA MOTA"},{"nome":"2026/1º - BÁSICO 1 - TERÇA - 20:30 - GIOVANI FANTINATI","codigo":"ORQ-V6-B1-TER-20:30-GIOVANI","curso":"ORQUESTRA DE VIOLÃO","modulo":"ORQUESTRA DE VIOLÃO","unidade":"ICEM-SEDE","horario":"TER - 20:30 - 21:20","capacidade":30,"alunos":4,"cancelamentos":0,"status":"EM ANDAMENTO","professor":"GIOVANI FANTINATI"},{"nome":"2026/1º - INTERMEDIÁRIO - QUARTA - 17:30 - HENRIQUE NETO","codigo":"OUVIDO-IN-QUA-17:30","curso":"TOCANDO DE OUVIDO","modulo":"ÚNICO","unidade":"ICEM-SEDE","horario":"QUA - 17:30 - 18:20","capacidade":15,"alunos":2,"cancelamentos":3,"status":"ABERTA","professor":"HENRIQUE NETO"},{"nome":"2026/1º - INICIANTE - SEGUNDA - 17:30 - HENRIQUE NETO","codigo":"OUVIDO-I-SEG-17:30","curso":"TOCANDO DE OUVIDO","modulo":"ÚNICO","unidade":"ICEM-SEDE","horario":"SEG - 17:30 - 18:20","capacidade":15,"alunos":4,"cancelamentos":0,"status":"ABERTA","professor":"HENRIQUE NETO"},{"nome":"2026/1º - INTERMEDIÁRIO - TERÇA - 17:30 - HENRIQUE NETO","codigo":"OUVIDO-I-TER-17:30","curso":"TOCANDO DE OUVIDO","modulo":"ÚNICO","unidade":"ICEM-SEDE","horario":"TER - 17:30 - 18:20","capacidade":15,"alunos":6,"cancelamentos":1,"status":"ABERTA","professor":"HENRIQUE NETO"},{"nome":"2026/1º - AVANÇADO - QUARTA - 16:30 - GABRIEL CARNEIRO","codigo":"PAN-A-QUA-16:30-GABRIEL","curso":"PANDEIRO","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"QUA - 16:30 - 17:20","capacidade":15,"alunos":6,"cancelamentos":2,"status":"ABERTA","professor":"GABRIEL CARNEIRO"},{"nome":"2026/1º - BÁSICO 1 - QUINTA - 19:30 - JÉSSICA CARVALHO","codigo":"PAN-B1-QUI-19:30-JESS","curso":"PROMO20","modulo":"PROMO25","unidade":"ICEM-SEDE","horario":"QUI - 19:30 - 20:20","capacidade":10,"alunos":7,"cancelamentos":0,"status":"ABERTA","professor":"JESSICA CARVALHO"},{"nome":"2026/1º - BÁSICO 1 - QUINTA - 20:30 - MATEUS TIMPONI","codigo":"PAN-B1-QUI-20:30-TIMPONI","curso":"PANDEIRO","modulo":"BÁSICO 1","unidade":"ICEM-SEDE","horario":"QUI - 20:30 - 21:20","capacidade":15,"alunos":10,"cancelamentos":2,"status":"EM ANDAMENTO","professor":"MATEUS TIMPONI"},{"nome":"2026/1º - BÁSICO 1 - TERÇA - 19:30 - GABRIEL CARNEIRO","codigo":"PAN-B1-TER-19:30-GABRIEL","curso":"PANDEIRO","modulo":"BÁSICO 1","unidade":"ICEM-SEDE","horario":"TER - 19:30 - 20:20","capacidade":17,"alunos":17,"cancelamentos":5,"status":"EM ANDAMENTO","professor":"GABRIEL CARNEIRO"},{"nome":"2026/1º - BÁSICO 2 - QUARTA - 18:30 - GABRIEL CARNEIRO","codigo":"PAN-B2-QUA-18:30-GABRIEL","curso":"PANDEIRO","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"QUA - 18:30 - 19:20","capacidade":15,"alunos":9,"cancelamentos":2,"status":"ABERTA","professor":"GABRIEL CARNEIRO"},{"nome":"2026/1º - BÁSICO 2 - QUINTA - 12:00 - JÚNIOR VIÉGAS","codigo":"PAN-B2-QUI-12:00-JUNIOR","curso":"PANDEIRO","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"QUI - 15:00 - 15:50","capacidade":20,"alunos":9,"cancelamentos":0,"status":"EM ANDAMENTO","professor":"EDUARDO MILEN VIÉGAS JÚNIOR"},{"nome":"2026/1º - BÁSICO 2 - QUINTA - 18:30 - JÉSSICA CARVALHO","codigo":"PAN-B2-QUI-18:30-JESSICA","curso":"PANDEIRO","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"QUI - 18:30 - 19:20","capacidade":15,"alunos":7,"cancelamentos":2,"status":"ABERTA","professor":"JESSICA CARVALHO"},{"nome":"2026/1º - BÁSICO 2 - QUINTA - 18:30 - MATEUS TIMPONI","codigo":"PAN-B2-QUI-18:30-TIMPONI","curso":"PANDEIRO","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"QUI - 18:30 - 19:20","capacidade":15,"alunos":8,"cancelamentos":3,"status":"EM ANDAMENTO","professor":"MATEUS TIMPONI"},{"nome":"2026/1º - BÁSICO 3 - QUARTA - 15:30 - GABRIEL CARNEIRO","codigo":"PAN-B3-QUA-15:30-GABRIEL","curso":"PANDEIRO","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"QUA - 15:30 - 16:20","capacidade":15,"alunos":3,"cancelamentos":0,"status":"EM ANDAMENTO","professor":"GABRIEL CARNEIRO"},{"nome":"2026/1º - BÁSICO 3 - QUARTA - 18:30 - MATEUS TIMPONI","codigo":"PAN-B3-QUA-18:30-TIMPONI","curso":"PANDEIRO","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"QUA - 19:30 - 20:20","capacidade":15,"alunos":2,"cancelamentos":1,"status":"ABERTA","professor":"MATEUS TIMPONI"},{"nome":"2026/1º - BÁSICO 3 - TERÇA - 11:30 - JÉSSICA CARVALHO","codigo":"PAN-B3-TER-11:30-JESSICA","curso":"PANDEIRO","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"TER - 11:30 - 12:20","capacidade":15,"alunos":9,"cancelamentos":1,"status":"ABERTA","professor":"JESSICA CARVALHO"},{"nome":"2026/1º - BÁSICO 3 - TERÇA - 20:00 - JÉSSICA CARVALHO","codigo":"PAN-B3-TER-20:00-JESSICA","curso":"PANDEIRO","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"TER - 20:00 - 21:00","capacidade":15,"alunos":6,"cancelamentos":0,"status":"ABERTA","professor":"JESSICA CARVALHO"},{"nome":"2026/1º - BÁSICO 4 - QUINTA - 20:30 - JÉSSICA CARVALHO","codigo":"PAN-B4-QUI-20:30-JESSICA","curso":"PANDEIRO","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"QUI - 20:30 - 21:20","capacidade":15,"alunos":6,"cancelamentos":0,"status":"ABERTA","professor":"JESSICA CARVALHO"},{"nome":"2026/1º - BÁSICO 4 - TERÇA - 17:30 - GABRIEL CARNEIRO","codigo":"PAN-B4-TER-17:30-GABRIEL","curso":"PANDEIRO","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"TER - 17:30 - 18:20","capacidade":15,"alunos":8,"cancelamentos":0,"status":"EM ANDAMENTO","professor":"GABRIEL CARNEIRO"},{"nome":"2026/1º - BÁSICO 5 - TERÇA - 18:00 - JÉSSICA CARVALHO","codigo":"PAN-B5-TER-18:00-JESSICA","curso":"PANDEIRO","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"TER - 18:00 - 19:00","capacidade":15,"alunos":11,"cancelamentos":0,"status":"ABERTA","professor":"JESSICA CARVALHO"},{"nome":"2026/1º - BÁSICO 5 - TERÇA - 19:00 - JÉSSICA CARVALHO","codigo":"PAN-B5-TER-19:00-JESSICA","curso":"PANDEIRO","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"TER - 19:00 - 20:00","capacidade":15,"alunos":7,"cancelamentos":1,"status":"ABERTA","professor":"JESSICA CARVALHO"},{"nome":"2026/1º - BÁSICO 6 - QUARTA - 17:30 - GABRIEL CARNEIRO","codigo":"PAN-B6-QUA-17:30-GABRIEL","curso":"PANDEIRO","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"QUA - 17:30 - 18:20","capacidade":15,"alunos":3,"cancelamentos":0,"status":"EM ANDAMENTO","professor":"GABRIEL CARNEIRO"},{"nome":"2026/1º - BÁSICO 6 - QUINTA - 17:30 - JÉSSICA CARVALHO","codigo":"PAN-B6-QUI-17:30-JESSICA","curso":"PANDEIRO","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"QUI - 17:30 - 18:20","capacidade":15,"alunos":8,"cancelamentos":0,"status":"ABERTA","professor":"JESSICA CARVALHO"},{"nome":"2026/1º - EXCLUSIVO - TERÇA - 10:30 - JÉSSICA CARVALHO","codigo":"PAN-E-TER-10:30-JESSICA","curso":"PANDEIRO","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"TER - 10:30 - 11:20","capacidade":1,"alunos":1,"cancelamentos":0,"status":"ABERTA","professor":"JESSICA CARVALHO"},{"nome":"2026/1º - INTERMEDIÁRIO - TERÇA - 18:30 - GABRIEL CARNEIRO","codigo":"PAN-I-TER-18:30-GABRIEL","curso":"PANDEIRO","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"TER - 18:30 - 19:20","capacidade":15,"alunos":2,"cancelamentos":0,"status":"EM ANDAMENTO","professor":"GABRIEL CARNEIRO"},{"nome":"2026/1º - BÁSICO 2 - QUARTA - 20:30 - MATEUS TIMPONI","codigo":"PER-B2-QUA-20:30-TIMPONI","curso":"PERCUSSÃO","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"QUA - 20:30 - 21:20","capacidade":15,"alunos":2,"cancelamentos":0,"status":"EM ANDAMENTO","professor":"MATEUS TIMPONI"},{"nome":"2026/1º - BÁSICO 2 - QUINTA - 13:00 - JUNIOR VIÉGAS","codigo":"PER-B2-QUI-13:00-JUNIOR","curso":"PERCUSSÃO","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"QUI - 11:00 - 11:50","capacidade":20,"alunos":2,"cancelamentos":0,"status":"EM ANDAMENTO","professor":"EDUARDO MILEN VIÉGAS JÚNIOR"},{"nome":"2026/1º - BÁSICO 3 - QUARTA - 19:30 - MATEUS TIMPONI","codigo":"PER-B3-QUA-19:30-TIMPONI","curso":"PERCUSSÃO","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"QUA - 19:30 - 20:20","capacidade":15,"alunos":6,"cancelamentos":0,"status":"EM ANDAMENTO","professor":"MATEUS TIMPONI"},{"nome":"2026/1º - BATUCADA DE SAMBA - QUINTA - 18:30 - JÚNIOR VIÉGAS","codigo":"PER-BS-QUI-18:30","curso":"PERCUSSÃO","modulo":"BÁSICO 1","unidade":"ICEM-SEDE","horario":"QUI - 18:30 - 19:20","capacidade":20,"alunos":10,"cancelamentos":2,"status":"EM ANDAMENTO","professor":"EDUARDO MILEN VIÉGAS JÚNIOR"},{"nome":"2026/1º - BATUCADA DE SAMBA - QUINTA - 19:30 - JÚNIOR VIÉGAS","codigo":"PER-BS-QUI-19:30","curso":"PERCUSSÃO","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"QUI - 19:30 - 20:20","capacidade":20,"alunos":15,"cancelamentos":3,"status":"EM ANDAMENTO","professor":"EDUARDO MILEN VIÉGAS JÚNIOR"},{"nome":"2026/1º - NORDESTINA - QUINTA - 17:30 - JÚNIOR VIÉGAS","codigo":"PER-N-QUI-17:30","curso":"PERCUSSÃO","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"QUA - 17:30 - 18:20","capacidade":20,"alunos":12,"cancelamentos":1,"status":"EM ANDAMENTO","professor":"EDUARDO MILEN VIÉGAS JÚNIOR"},{"nome":"2026/1º - PERSONALIZADO - SEGUNDA - 19:30 - HENRIQUE NETO","codigo":"PERSONALIZADO-SEG-19:30","curso":"VIOLÃO","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"SEG - 19:30 - 20:20","capacidade":1,"alunos":1,"cancelamentos":0,"status":"ABERTA","professor":"HENRIQUE NETO"},{"nome":"2026/1º - SAMBA - QUINTA - 20:30 - JÚNIOR VIÉGAS","codigo":"PER-S-QUI-20:30","curso":"PERCUSSÃO","modulo":"BÁSICO 1","unidade":"ICEM-SEDE","horario":"QUI - 20:30 - 21:20","capacidade":20,"alunos":11,"cancelamentos":3,"status":"EM ANDAMENTO","professor":"EDUARDO MILEN VIÉGAS JÚNIOR"},{"nome":"2026/1º - BÁSICO 1 - QUINTA - 16:30 - LILI LEON","codigo":"PRO-ACO-B1-QUI-16:30","curso":"PROMO50","modulo":"PROMO50","unidade":"ICEM-SEDE","horario":"QUI - 16:30 - 17:20","capacidade":10,"alunos":6,"cancelamentos":5,"status":"EM ANDAMENTO","professor":"LILI LEON"},{"nome":"CANTO POPULAR - BÁSICO 1 - QUARTA - 15:30 - MÁRCIA TAUIL","codigo":"PRO-CAN-B1-QUA-15:30-TAUIL","curso":"PROMO50","modulo":"PROMO50","unidade":"ICEM-SEDE","horario":"QUA - 15:30 - 16:20","capacidade":10,"alunos":6,"cancelamentos":1,"status":"EM ANDAMENTO","professor":"MÁRCIA TAUIL"},{"nome":"CANTO POPULAR - BÁSICO 1 - SEGUNDA - 16:30 - MÁRCIA TAUIL","codigo":"PRO-CAN-B1-SEG-16:30","curso":"PROMO50","modulo":"PROMO50","unidade":"ICEM-SEDE","horario":"SEG - 16:30 - 17:20","capacidade":11,"alunos":10,"cancelamentos":2,"status":"EM ANDAMENTO","professor":"MÁRCIA TAUIL"},{"nome":"2026/1º - BÁSICO 2 - QUINTA - 14:30 - MÁRCIA TAUIL","codigo":"PRO-CAN-B2-QUI-14:30-TAUIL","curso":"PROMO50","modulo":"PROMO50","unidade":"ICEM-SEDE","horario":"QUI - 14:30 - 15:20","capacidade":10,"alunos":7,"cancelamentos":0,"status":"EM ANDAMENTO","professor":"MÁRCIA TAUIL"},{"nome":"2026/1º - BÁSICO 2 - SEXTA - 14:00 - MATHEUS VILANOVA","codigo":"PRO-CAN-B2-SEX-14:00-VILANOVA","curso":"PROMO50","modulo":"PROMO50","unidade":"ICEM-SEDE","horario":"SEX - 14:00 - 14:50","capacidade":15,"alunos":6,"cancelamentos":1,"status":"ABERTA","professor":"MATHEUS VILANOVA"},{"nome":"2026/1º - BÁSICO 1 - QUINTA - 10:00 - NELSON SERRA","codigo":"PROMO-CAV-B1-QUI-10:00","curso":"PROMO50","modulo":"PROMO50","unidade":"ICEM-SEDE","horario":"QUI - 10:00 - 10:50","capacidade":11,"alunos":11,"cancelamentos":2,"status":"ABERTA","professor":"NELSON SERRA"},{"nome":"2026/1º - BÁSICO 2 - QUINTA - 11:00 - NELSON SERRA","codigo":"PROMO-CAV-B2-QUI-11:00","curso":"PROMO50","modulo":"PROMO50","unidade":"ICEM-SEDE","horario":"QUA - 11:00 - 11:50","capacidade":10,"alunos":7,"cancelamentos":1,"status":"ABERTA","professor":"NELSON SERRA"},{"nome":"2026/1º - BÁSICO 3 - QUARTA - 14:30 - JOÃO NETO","codigo":"PROMO-V6-B3-QUA-14:30-JOÃO","curso":"PROMO50","modulo":"PROMO50","unidade":"ICEM-SEDE","horario":"QUA - 14:30 - 15:20","capacidade":10,"alunos":4,"cancelamentos":0,"status":"ABERTA","professor":"JOÃO NETO"},{"nome":"2026/1º - BÁSICO 2 - QUARTA - 11:00 - CARLOS CARDENAS","codigo":"PROM-SAX-B2-QUA-11:00","curso":"PROMO50","modulo":"PROMO50","unidade":"ICEM-SEDE","horario":"QUA - 10:00 - 10:50","capacidade":4,"alunos":2,"cancelamentos":0,"status":"ABERTA","professor":"CARLOS CARDENAS"},{"nome":"PANDEIRO - BÁSICO 1 - TERÇA - 16:30 - GABRIEL CARNEIRO","codigo":"PRO-PAN-B1-TER-16:30-GABRIEL","curso":"PROMO50","modulo":"PROMO50","unidade":"ICEM-SEDE","horario":"TER - 16:30 - 17:20","capacidade":17,"alunos":16,"cancelamentos":5,"status":"EM ANDAMENTO","professor":"GABRIEL CARNEIRO"},{"nome":"2026/1º - BÁSICO 2 - QUARTA - 14:30 - GABRIEL CARNEIRO","codigo":"PRO-PAN-B2-QUA-14:30-GABRIEL","curso":"PROMO50","modulo":"PROMO50","unidade":"ICEM-SEDE","horario":"QUA - 14:30 - 15:20","capacidade":15,"alunos":3,"cancelamentos":0,"status":"EM ANDAMENTO","professor":"GABRIEL CARNEIRO"},{"nome":"2026/1º - BÁSICO 2 - QUARTA - 15:30 - JOÃO NETO","codigo":"PRO-V6-B2-QUA-15:30-JOÃO","curso":"PROMO50","modulo":"PROMO50","unidade":"ICEM-SEDE","horario":"QUA - 15:30 - 16:20","capacidade":10,"alunos":4,"cancelamentos":3,"status":"ABERTA","professor":"JOÃO NETO"},{"nome":"2026/1º - BÁSICO 2 - SEGUNDA - 15:30 - GIOVANI FANTINATI","codigo":"PRO-VIO-B2-SEG-15:30","curso":"PROMO50","modulo":"PROMO50","unidade":"ICEM-SEDE","horario":"SEG - 15:30 - 16:20","capacidade":10,"alunos":7,"cancelamentos":0,"status":"EM ANDAMENTO","professor":"GIOVANI FANTINATI"},{"nome":"2026/1º - RITMO - TERÇA - 20:30 - MATEUS TIMPONI","codigo":"RITMICA-B1-TER-20:30","curso":"TEORIA E PERCEPÇÃO MUSICAL","modulo":"RÍTMICA","unidade":"ICEM-SEDE","horario":"TER - 20:30 - 21:20","capacidade":45,"alunos":10,"cancelamentos":0,"status":"EM ANDAMENTO","professor":"MATEUS TIMPONI"},{"nome":"2026/1º - RITMO - TERÇA - 19:30 - MATEUS TIMPONI","codigo":"RITMICA-L-TER-19:30","curso":"TEORIA E PERCEPÇÃO MUSICAL","modulo":"RÍTMICA","unidade":"ICEM-SEDE","horario":"TER - 19:30 - 20:20","capacidade":45,"alunos":29,"cancelamentos":2,"status":"EM ANDAMENTO","professor":"MATEUS TIMPONI"},{"nome":"2026/1º - INTERMEDIÁRIO - SEGUNDA - 18:30 - HENRIQUE NETO","codigo":"SAMBA-I-SEG-18:30","curso":"PRÁTICA DE CONJUNTO - SAMBA","modulo":"SAMBA","unidade":"ICEM-SEDE","horario":"SEG - 18:30 - 19:20","capacidade":16,"alunos":16,"cancelamentos":2,"status":"ABERTA","professor":"HENRIQUE NETO"},{"nome":"2026/1º - BÁSICO 1 - QUARTA - 18:30 - CARLOS CARDENAS","codigo":"SAX-B1-QUA-18:30","curso":"SAXOFONE","modulo":"BÁSICO 1","unidade":"ICEM-SEDE","horario":"QUA - 18:30 - 19:20","capacidade":4,"alunos":3,"cancelamentos":3,"status":"ABERTA","professor":"CARLOS CARDENAS"},{"nome":"2026/1º - BÁSICO 1 - QUARTA - 19:30 - CARLOS CARDENAS","codigo":"SAX-B1-QUA-19:30","curso":"SAXOFONE","modulo":"BÁSICO 1","unidade":"ICEM-SEDE","horario":"QUA - 19:30 - 20:20","capacidade":4,"alunos":4,"cancelamentos":0,"status":"ABERTA","professor":"CARLOS CARDENAS"},{"nome":"2026/1º - BÁSICO 1 - QUARTA - 20:30 - CARLOS CARDENAS","codigo":"SAX-B1-QUA-20:30","curso":"SAXOFONE","modulo":"BÁSICO 1","unidade":"ICEM-SEDE","horario":"QUA - 20:30 - 21:20","capacidade":4,"alunos":4,"cancelamentos":0,"status":"EM ANDAMENTO","professor":"CARLOS CARDENAS"},{"nome":"2026/1º - BÁSICO 2 - SEGUNDA - 19:30 - CARLOS CARDENAS","codigo":"SAX-B2-SEG-19:30","curso":"SAXOFONE","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"SEG - 19:30 - 20:20","capacidade":4,"alunos":4,"cancelamentos":1,"status":"EM ANDAMENTO","professor":"CARLOS CARDENAS"},{"nome":"2026/1º - BÁSICO 2 - SEGUNDA - 20:30 - CARLOS CARDENAS","codigo":"SAX-B2-SEG-20:30","curso":"SAXOFONE","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"SEG - 20:30 - 21:30","capacidade":4,"alunos":4,"cancelamentos":0,"status":"ABERTA","professor":"CARLOS CARDENAS"},{"nome":"2026/1º - BÁSICO 3 - QUARTA - 10:00 - CARLOS CARDENAS","codigo":"SAX-B3-QUA-10:00","curso":"SAXOFONE","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"QUA - 10:00 - 10:50","capacidade":4,"alunos":2,"cancelamentos":0,"status":"ABERTA","professor":"CARLOS CARDENAS"},{"nome":"2026/1º - BÁSICO 3 - SEGUNDA - 18:30 - CARLOS CARDENAS","codigo":"SAX-B3-SEG-18:30","curso":"SAXOFONE","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"SEG - 18:30 - 19:20","capacidade":4,"alunos":1,"cancelamentos":1,"status":"EM ANDAMENTO","professor":"CARLOS CARDENAS"},{"nome":"2026/1º - BÁSICO 4 - QUARTA - 09:00 - CARLOS CARDENAS","codigo":"SAX-B4-QUA-09:00","curso":"SAXOFONE","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"QUA - 09:00 - 09:50","capacidade":4,"alunos":2,"cancelamentos":0,"status":"ABERTA","professor":"CARLOS CARDENAS"},{"nome":"2026/1º - INTERMEDIÁRIO - TERÇA - 15:00 - ARTHUR REIS","codigo":"SERESTA-I-TER-15:00","curso":"PRÁTICA DE CONJUNTO - SERESTA","modulo":"SERESTA","unidade":"ICEM-SEDE","horario":"TER - 15:00 - 15:50","capacidade":15,"alunos":9,"cancelamentos":1,"status":"ABERTA","professor":"ARTHUR REIS"},{"nome":"2026/1º - BÁSICO 1 - TERÇA - 08:00 - LUCIANA CAVALCANTI","codigo":"TEC-B1-TER-08:00","curso":"TECLADO","modulo":"BÁSICO 1","unidade":"ICEM-SEDE","horario":"TER - 08:00 - 08:50","capacidade":5,"alunos":4,"cancelamentos":1,"status":"EM ANDAMENTO","professor":"LUCIANA CAVALCANTI"},{"nome":"2026/1º - BÁSICO 1 - TERÇA - 11:00 - LUCIANA CAVALCANTI","codigo":"TEC-B1-TER-11:00","curso":"TECLADO","modulo":"BÁSICO 1","unidade":"ICEM-SEDE","horario":"TER - 11:00 - 11:50","capacidade":5,"alunos":5,"cancelamentos":1,"status":"EM ANDAMENTO","professor":"LUCIANA CAVALCANTI"},{"nome":"2026/1º - BÁSICO 2 - TERÇA - 09:00 - LUCIANA CAVALCANTI","codigo":"TEC-B2-TER-09:00","curso":"TECLADO","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"TER - 09:00 - 09:50","capacidade":5,"alunos":3,"cancelamentos":2,"status":"EM ANDAMENTO","professor":"LUCIANA CAVALCANTI"},{"nome":"2026/1º - BÁSICO 2 - TERÇA - 10:00 - LUCIANA CAVALCANTI","codigo":"TEC-B2-TER-10:00","curso":"TECLADO","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"TER - 10:00 - 10:50","capacidade":5,"alunos":3,"cancelamentos":1,"status":"EM ANDAMENTO","professor":"LUCIANA CAVALCANTI"},{"nome":"2026/1º - BÁSICO 2 - TERÇA - 12:00 - LUCIANA CAVALCANTI","codigo":"TEC-B2-TER-12:00","curso":"TECLADO","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"TER - 12:00 - 12:50","capacidade":5,"alunos":3,"cancelamentos":0,"status":"EM ANDAMENTO","professor":"LUCIANA CAVALCANTI"},{"nome":"2026/1º - BÁSICO 1 - QUARTA - 17:30 - JESUWAY LEÃO ONLINE","codigo":"TEO-B1-QUA-17:30-ONLINE","curso":"TEORIA E PERCEPÇÃO MUSICAL","modulo":"TEORIA","unidade":"ICEM-SEDE","horario":"QUA - 17:30 - 18:20","capacidade":45,"alunos":32,"cancelamentos":4,"status":"ABERTA","professor":"JESUWAY LEÃO"},{"nome":"2026/1º - BÁSICO 1 - QUARTA - 19:30 - GIOVANI FANTINATI","codigo":"TEO-B1-QUA-19:30-GIOVANI","curso":"TEORIA E PERCEPÇÃO MUSICAL","modulo":"TEORIA","unidade":"ICEM-SEDE","horario":"QUA - 19:30 - 20:20","capacidade":40,"alunos":39,"cancelamentos":4,"status":"EM ANDAMENTO","professor":"GIOVANI FANTINATI"},{"nome":"2026/1º - BÁSICO 1 - QUARTA - 19:30 - JESUWAY LEÃO ONLINE","codigo":"TEO-B1-QUA-19:30-ONLINE","curso":"TEORIA E PERCEPÇÃO MUSICAL","modulo":"TEORIA","unidade":"ICEM-SEDE","horario":"QUA - 19:30 - 20:20","capacidade":45,"alunos":34,"cancelamentos":8,"status":"ABERTA","professor":"JESUWAY LEÃO"},{"nome":"2026/1º - BÁSICO 1 - QUINTA - 09:00 - JESUWAY LEÃO","codigo":"TEO-B1-QUI-09:00-JESUWAY","curso":"TEORIA E PERCEPÇÃO MUSICAL","modulo":"TEORIA","unidade":"ICEM-SEDE","horario":"QUI - 09:00 - 09:50","capacidade":40,"alunos":18,"cancelamentos":2,"status":"ABERTA","professor":"JESUWAY LEÃO"},{"nome":"2026/1º - BÁSICO 1 - SEGUNDA - 18:30 - TIAGO JOÃO","codigo":"TEO-B1-SEG-18:30-TIAGO","curso":"TEORIA E PERCEPÇÃO MUSICAL","modulo":"TEORIA","unidade":"ICEM-SEDE","horario":"SEG - 18:30 - 19:20","capacidade":40,"alunos":29,"cancelamentos":5,"status":"ABERTA","professor":"TIAGO JOÃO"},{"nome":"2026/1º - BÁSICO 1 - TERÇA - 18:30 - TIAGO JOÃO","codigo":"TEO-B1-TER-18:30-TIAGO","curso":"TEORIA E PERCEPÇÃO MUSICAL","modulo":"TEORIA","unidade":"ICEM-SEDE","horario":"TER - 18:30 - 19:20","capacidade":40,"alunos":32,"cancelamentos":5,"status":"ABERTA","professor":"TIAGO JOÃO"},{"nome":"2026/1º - BÁSICO 2 - QUARTA - 20:30 - GIOVANI FANTINATI","codigo":"TEO-B2-QUA-20:30-GIOVANI","curso":"TEORIA E PERCEPÇÃO MUSICAL","modulo":"TEORIA","unidade":"ICEM-SEDE","horario":"QUA - 20:30 - 21:20","capacidade":40,"alunos":19,"cancelamentos":7,"status":"EM ANDAMENTO","professor":"GIOVANI FANTINATI"},{"nome":"2026/1º - BÁSICO 2 - SEGUNDA - 19:30 - TIAGO JOÃO","codigo":"TEO-B2-SEG-19:30-TIAGO","curso":"TEORIA E PERCEPÇÃO MUSICAL","modulo":"TEORIA","unidade":"ICEM-SEDE","horario":"SEG - 19:30 - 20:20","capacidade":40,"alunos":25,"cancelamentos":4,"status":"ABERTA","professor":"TIAGO JOÃO"},{"nome":"2026/1º - BÁSICO 2 - TERÇA - 17:30 - TIAGO JOÃO","codigo":"TEO-B2-TER-17:30-TIAGO","curso":"TEORIA E PERCEPÇÃO MUSICAL","modulo":"TEORIA","unidade":"ICEM-SEDE","horario":"TER - 17:30 - 18:20","capacidade":40,"alunos":25,"cancelamentos":1,"status":"ABERTA","professor":"TIAGO JOÃO"},{"nome":"2026/1º - BÁSICO 2 - TERÇA - 19:30 - JESUWAY ONLINE","codigo":"TEO-B2-TER-19:30-ONLINE","curso":"TEORIA E PERCEPÇÃO MUSICAL","modulo":"TEORIA","unidade":"ICEM-SEDE","horario":"TER - 19:30 - 20:20","capacidade":40,"alunos":39,"cancelamentos":7,"status":"ABERTA","professor":"JESUWAY LEÃO"},{"nome":"2026/1º - BÁSICO 3 - QUINTA - 18:30 - TIAGO JOÃO","codigo":"TEO-B3-QUI-18:30-TIAGO","curso":"TEORIA E PERCEPÇÃO MUSICAL","modulo":"TEORIA","unidade":"ICEM-SEDE","horario":"QUI - 18:30 - 19:20","capacidade":40,"alunos":20,"cancelamentos":5,"status":"ABERTA","professor":"TIAGO JOÃO"},{"nome":"2026/1º - BÁSICO 3 - TERÇA - 18:30 - JESUWAY LEÃO ONLINE","codigo":"TEO-B3-TER-18:30-ONLINE","curso":"TEORIA E PERCEPÇÃO MUSICAL","modulo":"TEORIA","unidade":"ICEM-SEDE","horario":"TER - 18:30 - 19:20","capacidade":40,"alunos":24,"cancelamentos":3,"status":"ABERTA","professor":"JESUWAY LEÃO"},{"nome":"2026/1º - BÁSICO 4 - QUARTA - 18:30 - JESUWAY LEÃO ONLINE","codigo":"TEO-B4-QUA-18:30-ONLINE","curso":"TEORIA E PERCEPÇÃO MUSICAL","modulo":"TEORIA","unidade":"ICEM-SEDE","horario":"QUA - 18:30 - 19:20","capacidade":40,"alunos":9,"cancelamentos":1,"status":"ABERTA","professor":"JESUWAY LEÃO"},{"nome":"2026/1º - BÁSICO 4 - QUINTA - 19:30 - TIAGO JOÃO","codigo":"TEO-B4-QUI-19:30-TIAGO","curso":"TEORIA E PERCEPÇÃO MUSICAL","modulo":"TEORIA","unidade":"ICEM-SEDE","horario":"QUI - 19:30 - 20:20","capacidade":40,"alunos":14,"cancelamentos":1,"status":"ABERTA","professor":"TIAGO JOÃO"},{"nome":"2026/1º - BÁSICO 4 - SEGUNDA - 20:30 - GIOVANI FANTINATI","codigo":"TEO-B4-SEG-20:30-GIOVANI","curso":"TEORIA E PERCEPÇÃO MUSICAL","modulo":"TEORIA","unidade":"ICEM-SEDE","horario":"SEG - 20:30 - 21:30","capacidade":40,"alunos":10,"cancelamentos":0,"status":"EM ANDAMENTO","professor":"GIOVANI FANTINATI"},{"nome":"2026/1º - BÁSICO 5 - TERÇA - 17:30 - JESUWAY LEÃO ONLINE","codigo":"TEO-B5-TER-17:30-ONLINE","curso":"TEORIA E PERCEPÇÃO MUSICAL","modulo":"TEORIA","unidade":"ICEM-SEDE","horario":"TER - 17:30 - 18:20","capacidade":40,"alunos":9,"cancelamentos":2,"status":"ABERTA","professor":"JESUWAY LEÃO"},{"nome":"2026/1º - BÁSICO 6 - QUINTA - 18:30 - JESUWAY LEÃO","codigo":"TEO-B6-QUI-18:30-JESUWAY","curso":"TEORIA E PERCEPÇÃO MUSICAL","modulo":"TEORIA","unidade":"ICEM-SEDE","horario":"QUI - 18:30 - 19:20","capacidade":40,"alunos":1,"cancelamentos":1,"status":"ABERTA","professor":"JESUWAY LEÃO"},{"nome":"2026/1º - BÁSICO 7 - QUINTA - 19:30 - JESUWAY LEÃO","codigo":"TEO-B7-QUI-19:30-JESUWAY","curso":"TEORIA E PERCEPÇÃO MUSICAL","modulo":"TEORIA","unidade":"ICEM-SEDE","horario":"QUI - 19:30 - 20:20","capacidade":40,"alunos":3,"cancelamentos":2,"status":"ABERTA","professor":"JESUWAY LEÃO"},{"nome":"2026/1º - BÁSICIO 8 - QUINTA - 17:30 - JESUWAY LEÃO","codigo":"TEO-B8-QUI-17:30-JESUWAY","curso":"TEORIA E PERCEPÇÃO MUSICAL","modulo":"TEORIA","unidade":"ICEM-SEDE","horario":"QUI - 17:30 - 18:20","capacidade":40,"alunos":4,"cancelamentos":2,"status":"ABERTA","professor":"JESUWAY LEÃO"},{"nome":"TESTE01","codigo":"TESTE02","curso":"XTESTE","modulo":"BÁSICO 1","unidade":"ICEM-SEDE","horario":"QUI-16:30-17:20","capacidade":10,"alunos":3,"cancelamentos":2,"status":"CANCELADA","professor":""},{"nome":"2026/1º - BÁSICO 1 - QUARTA - 10:00 - NICOLAU DE ANDRADE","codigo":"TRO-B1-QUA-10:00","curso":"TROMPETE","modulo":"BÁSICO 1","unidade":"ICEM-SEDE","horario":"QUA - 10:00 - 10:50","capacidade":4,"alunos":2,"cancelamentos":1,"status":"ABERTA","professor":"NICOLAU DE ANDRADE"},{"nome":"2026/1º - BÁSICO 2 - SÁBADO - 09:30 - NICOLAU DE ANDRADE","codigo":"TRO-B2-SAB-09:30","curso":"TROMPETE","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"SAB - 09:30 - 10-20","capacidade":3,"alunos":3,"cancelamentos":0,"status":"ABERTA","professor":"NICOLAU DE ANDRADE"},{"nome":"2026/1º - BÁSICO 1 - QUINTA - 20:30 - IGNACIO GOMEZ","codigo":"UKU-B1-QUI-20:30","curso":"UKULELE","modulo":"BÁSICO 1","unidade":"ICEM-SEDE","horario":"QUI - 20:30 - 21:20","capacidade":6,"alunos":3,"cancelamentos":0,"status":"EM ANDAMENTO","professor":"IGNACIO GOMEZ"},{"nome":"2026/1º - BÁSICO 2 - QUINTA - 17:30 - IGNACIO GOMEZ","codigo":"UKU-B2-QUI-17:30","curso":"UKULELE","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"QUI - 17:30 - 18:20","capacidade":6,"alunos":2,"cancelamentos":0,"status":"ABERTA","professor":"IGNACIO GOMEZ"},{"nome":"2026/1º - BÁSICO 3 - QUINTA - 19:30 - IGNACIO GOMEZ","codigo":"UKU-B3-QUI-19:30","curso":"UKULELE","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"QUI - 19:30 - 20:20","capacidade":6,"alunos":2,"cancelamentos":0,"status":"ABERTA","professor":"IGNACIO GOMEZ"},{"nome":"2026/1º - BÁSICO 4 - QUINTA - 18:30 - IGNACIO GOMEZ","codigo":"UKU-B4-QUI-18:30","curso":"UKULELE","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"QUI - 18:30 - 19:20","capacidade":6,"alunos":1,"cancelamentos":0,"status":"ABERTA","professor":"IGNACIO GOMEZ"},{"nome":"2026/1º - BÁSICO 1 - QUARTA - 16:30 - ARTHUR REIS","codigo":"V6-B1-QUA-16:30-ARTHUR","curso":"VIOLÃO","modulo":"BÁSICO 1","unidade":"ICEM-SEDE","horario":"QUA - 16:30 - 17:20","capacidade":10,"alunos":8,"cancelamentos":5,"status":"ABERTA","professor":"ARTHUR REIS"},{"nome":"2026/1º - BÁSICO 1 - QUARTA - 18:30 - GIOVANI FANTINATI","codigo":"V6-B1-QUA-18:30-GIOVANI","curso":"VIOLÃO","modulo":"BÁSICO 1","unidade":"ICEM-SEDE","horario":"QUA - 18:30 - 19:20","capacidade":10,"alunos":9,"cancelamentos":3,"status":"EM ANDAMENTO","professor":"GIOVANI FANTINATI"},{"nome":"2026/1º - BÁSICO 1 - SEGUNDA - 17:30 - TIAGO JOÃO","codigo":"V6-B1-SEG-17:30-TIAGO","curso":"VIOLÃO","modulo":"BÁSICO 1","unidade":"ICEM-SEDE","horario":"SEG - 17:30 - 18:20","capacidade":10,"alunos":5,"cancelamentos":5,"status":"ABERTA","professor":"TIAGO JOÃO"},{"nome":"2026/1º - BÁSICO 1 - TERÇA - 10:30 - GIOVANI FANTINATI","codigo":"V6-B1-TER-10:30-GIOVANI","curso":"VIOLÃO CRIANÇA","modulo":"INFANTIL","unidade":"ICEM-SEDE","horario":"TER - 10:30 - 11:20","capacidade":5,"alunos":0,"cancelamentos":0,"status":"CANCELADA","professor":"GIOVANI FANTINATI"},{"nome":"2026/1º - BÁSICO 1 - TERÇA - 15:30 - GIOVANI FANTINATI","codigo":"V6-B1-TER-15:30-GIOVANI","curso":"VIOLÃO CRIANÇA","modulo":"INFANTIL","unidade":"ICEM-SEDE","horario":"TER - 15:30 - 16:20","capacidade":5,"alunos":0,"cancelamentos":1,"status":"CANCELADA","professor":"GIOVANI FANTINATI"},{"nome":"2026/1º - BÁSICO 1 - TERÇA - 19:30 - VICTOR MAURO","codigo":"V6-B1-TER-19:30-VICTOR","curso":"VIOLÃO","modulo":"BÁSICO 1","unidade":"ICEM-SEDE","horario":"TER - 19:30 - 20:20","capacidade":12,"alunos":10,"cancelamentos":3,"status":"EM ANDAMENTO","professor":"VICTOR MAURO"},{"nome":"2026/1º - BÁSICO 2 - QUARTA - 17:30 - ARTHUR REIS","codigo":"V6-B2-QUA-17:30-ARTHUR","curso":"VIOLÃO","modulo":"BÁSICO 2","unidade":"ICEM-SEDE","horario":"QUA - 17:30 - 18:20","capacidade":10,"alunos":4,"cancelamentos":2,"status":"ABERTA","professor":"ARTHUR REIS"},{"nome":"2026/1º - BÁSICO 2 - QUARTA - 17:30 - TIAGO JOÃO","codigo":"V6-B2-QUA-17:30-TIAGO","curso":"VIOLÃO","modulo":"BÁSICO 2","unidade":"ICEM-SEDE","horario":"QUA - 17:30 - 18:20","capacidade":10,"alunos":3,"cancelamentos":4,"status":"ABERTA","professor":"TIAGO JOÃO"},{"nome":"2026/1º - BÁSICO 2 - QUARTA - 19:30 - TIAGO JOÃO","codigo":"V6-B2-QUA-19:30-TIAGO","curso":"VIOLÃO","modulo":"BÁSICO 2","unidade":"ICEM-SEDE","horario":"QUA - 19:30 - 20:20","capacidade":10,"alunos":6,"cancelamentos":5,"status":"ABERTA","professor":"TIAGO JOÃO"},{"nome":"2026/1º - BÁSICO 2 - QUINTA - 19:30 - VICTOR MAURO","codigo":"V6-B2-QUI-19:30-VICTOR","curso":"VIOLÃO","modulo":"BÁSICO 2","unidade":"ICEM-SEDE","horario":"QUI - 19:30 - 20:20","capacidade":12,"alunos":11,"cancelamentos":4,"status":"EM ANDAMENTO","professor":"VICTOR MAURO"},{"nome":"2026/1º - BÁSICO 2 - SEGUNDA - 16:30 - GIOVANI FANTINATI","codigo":"V6-B2-SEG-16:30-GIOVANI","curso":"VIOLÃO","modulo":"BÁSICO 2","unidade":"ICEM-SEDE","horario":"SEG - 16:30 - 17:20","capacidade":11,"alunos":10,"cancelamentos":1,"status":"EM ANDAMENTO","professor":"GIOVANI FANTINATI"},{"nome":"2026/1º - BÁSICO 2 - SEGUNDA - 18:30 - GIOVANI FANTINATI","codigo":"V6-B2-SEG-18:30-GIOVANI","curso":"VIOLÃO","modulo":"BÁSICO 2","unidade":"ICEM-SEDE","horario":"SEG - 18:30 - 19:20","capacidade":11,"alunos":6,"cancelamentos":1,"status":"EM ANDAMENTO","professor":"GIOVANI FANTINATI"},{"nome":"2026/1º - BÁSICO 2 - TERÇA - 17:30 - GIOVANI FANTINATI","codigo":"V6-B2-TER-17:30-GIOVANI","curso":"VIOLÃO","modulo":"BÁSICO 2","unidade":"ICEM-SEDE","horario":"TER - 17:30 - 18:20","capacidade":10,"alunos":9,"cancelamentos":1,"status":"EM ANDAMENTO","professor":"GIOVANI FANTINATI"},{"nome":"2026/1º - BÁSICO 3 - QUARTA - 16:30 - JOÃO NETO","codigo":"V6-B3-QUA-16:30-JOÃO","curso":"VIOLÃO","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"QUA - 16:30 - 17:20","capacidade":10,"alunos":4,"cancelamentos":0,"status":"ABERTA","professor":"JOÃO NETO"},{"nome":"2026/1º - BÁSICO 3 - QUARTA - 17:30 - GIOVANI FANTINATI","codigo":"V6-B3-QUA-17:30-GIOVANI","curso":"VIOLÃO","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"QUA - 17:30 - 18:20","capacidade":10,"alunos":8,"cancelamentos":2,"status":"EM ANDAMENTO","professor":"GIOVANI FANTINATI"},{"nome":"2026/1º - BÁSICO 3 - QUARTA - 18:30 - ARTHUR REIS","codigo":"V6-B3-QUA-18:30-ARTHUR","curso":"VIOLÃO","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"QUA - 18:30 - 19:20","capacidade":10,"alunos":6,"cancelamentos":3,"status":"ABERTA","professor":"ARTHUR REIS"},{"nome":"2026/1º - BÁSICO 3 - QUARTA - 18:30 - TIAGO JOÃO","codigo":"V6-B3-QUA-18:30-TIAGO","curso":"VIOLÃO","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"QUA - 18:30 - 19:20","capacidade":10,"alunos":3,"cancelamentos":1,"status":"ABERTA","professor":"TIAGO JOÃO"},{"nome":"2026/1º - BÁSICO 3 - QUINTA - 20:30 - VICTOR MAURO","codigo":"V6-B3-QUI-20:30-VICTOR","curso":"VIOLÃO","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"QUI - 20:30 - 21:20","capacidade":10,"alunos":5,"cancelamentos":3,"status":"EM ANDAMENTO","professor":"VICTOR MAURO"},{"nome":"2026/1º - BÁSICO 3 - TERÇA - 17:30 - VICTOR MAURO","codigo":"V6-B3-TER-17:30-VICTOR","curso":"VIOLÃO","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"TER - 17:30 - 18:20","capacidade":10,"alunos":3,"cancelamentos":0,"status":"EM ANDAMENTO","professor":"VICTOR MAURO"},{"nome":"2026/1º - BÁSICO 4 - QUARTA - 17:30 - JOÃO NETO","codigo":"V6-B4-QUA-17:30-JOÃO","curso":"VIOLÃO","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"QUA - 17:30 - 18:20","capacidade":10,"alunos":2,"cancelamentos":0,"status":"ABERTA","professor":"JOÃO NETO"},{"nome":"2026/1º - BÁSICO 4 - QUARTA - 20:30 - ARTHUR REIS","codigo":"V6-B4-QUA-20:30-ARTHUR","curso":"VIOLÃO","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"QUA - 20:30 - 21:20","capacidade":10,"alunos":6,"cancelamentos":0,"status":"ABERTA","professor":"ARTHUR REIS"},{"nome":"2026/1º - BÁSICO 4 - QUINTA - 17:30 - ARTHUR REIS","codigo":"V6-B4-QUI-17:30-ARTHUR","curso":"VIOLÃO","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"QUI - 17:30 - 18:20","capacidade":10,"alunos":1,"cancelamentos":0,"status":"ABERTA","professor":"ARTHUR REIS"},{"nome":"2026/1º - BÁSICO 4 - QUINTA - 19:30 - ARTHUR REIS","codigo":"V6-B4-QUI-19:30-ARTHUR","curso":"VIOLÃO","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"QUI - 19:30 - 20:20","capacidade":10,"alunos":6,"cancelamentos":0,"status":"ABERTA","professor":"ARTHUR REIS"},{"nome":"2026/1º - BÁSICO 4 - SEGUNDA - 17:30 - GIOVANI FANTINATI","codigo":"V6-B4-SEG-17:30-GIOVANI","curso":"VIOLÃO","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"SEG - 17:30 - 18:20","capacidade":10,"alunos":4,"cancelamentos":1,"status":"EM ANDAMENTO","professor":"GIOVANI FANTINATI"},{"nome":"2026/1º - BÁSICO 4 - SEGUNDA - 18:30 - ARTHUR REIS","codigo":"V6-B4-SEG-18:30-ARTHUR","curso":"VIOLÃO","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"SEG - 18:30 - 19:20","capacidade":10,"alunos":2,"cancelamentos":0,"status":"EM ANDAMENTO","professor":"ARTHUR REIS"},{"nome":"2026/1º - BÁSICO 4 - SEGUNDA - 20:30 - TIAGO JOÃO","codigo":"V6-B4-SEG-20:30-TIAGO","curso":"VIOLÃO","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"SEG - 20:30 - 21:30","capacidade":10,"alunos":0,"cancelamentos":0,"status":"CANCELADA","professor":"TIAGO JOÃO"},{"nome":"2026/1º - BÁSICO 4 - TERÇA - 19:30 - GIOVANI FANTINATI","codigo":"V6-B4-TER-19:30-GIOVANI","curso":"VIOLÃO","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"TER - 19:30 - 20:20","capacidade":10,"alunos":5,"cancelamentos":0,"status":"EM ANDAMENTO","professor":"GIOVANI FANTINATI"},{"nome":"2026/1º - BÁSICO 5 - QUARTA - 19:30 - ARTHUR REIS","codigo":"V6-B5-QUA-19:30-ARTHUR","curso":"VIOLÃO","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"QUA - 19:30 - 20:20","capacidade":10,"alunos":2,"cancelamentos":1,"status":"ABERTA","professor":"ARTHUR REIS"},{"nome":"2026/1º - BÁSICO 5 - TERÇA - 09:30 - GIOVANI FANTINATI","codigo":"V6-B5-TER-09:30-GIOVANI","curso":"VIOLÃO CRIANÇA","modulo":"INFANTIL","unidade":"ICEM-SEDE","horario":"TER - 09:40 - 10:30","capacidade":5,"alunos":1,"cancelamentos":0,"status":"EM ANDAMENTO","professor":"GIOVANI FANTINATI"},{"nome":"2026/1º - BÁSICO 5 - TERÇA - 18:30 - GIOVANI FANTINATI","codigo":"V6-B5-TER-18:30-GIOVANI","curso":"VIOLÃO","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"TER - 18:30 - 19:20","capacidade":10,"alunos":7,"cancelamentos":0,"status":"EM ANDAMENTO","professor":"GIOVANI FANTINATI"},{"nome":"2026/1º - BÁSICO 5 - TERÇA - 20:30 - VICTOR MAURO","codigo":"V6-B5-TER-20:30-VICTOR","curso":"VIOLÃO","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"TER - 20:30 - 21:20","capacidade":10,"alunos":5,"cancelamentos":1,"status":"EM ANDAMENTO","professor":"VICTOR MAURO"},{"nome":"2026/1º - BÁSICO 6 - QUINTA - 17:40 - TIAGO JOÃO","codigo":"V6-B6-QUI-17:40-TIAGO","curso":"VIOLÃO","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"QUI - 17:40 - 18:30","capacidade":10,"alunos":2,"cancelamentos":0,"status":"ABERTA","professor":"TIAGO JOÃO"},{"nome":"2026/1º - BÁSICO 6 - QUINTA - 20:30 - ARTHUR REIS","codigo":"V6-B6-QUI-20:30-ARTHUR","curso":"VIOLÃO","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"QUI - 20:30 - 21:20","capacidade":10,"alunos":0,"cancelamentos":0,"status":"CANCELADA","professor":"ARTHUR REIS"},{"nome":"2026/1º - BÁSICO 6 - SEGUNDA - 17:30 - ARTHUR REIS","codigo":"V6-B6-SEG-17:30-ARTHUR","curso":"VIOLÃO","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"SEG - 17:30 - 18:20","capacidade":10,"alunos":4,"cancelamentos":0,"status":"ABERTA","professor":"ARTHUR REIS"},{"nome":"2026/1º - BÁSICO 6 - SEGUNDA - 19:30 - GIOVANI FANTINATI","codigo":"V6-B6-SEG-19:30-GIOVANI","curso":"VIOLÃO","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"SEG - 19:30 - 20:20","capacidade":10,"alunos":3,"cancelamentos":0,"status":"EM ANDAMENTO","professor":"GIOVANI FANTINATI"},{"nome":"2026/1º - BÁSICO 8 - TERÇA - 17:30 - ARTHUR REIS","codigo":"V6-B8-TER-17:30-ARTHUR","curso":"VIOLÃO","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"TER - 17:30 - 18:20","capacidade":10,"alunos":1,"cancelamentos":0,"status":"ABERTA","professor":"ARTHUR REIS"},{"nome":"VIOLÃO EXCLUSIVO TERÇA 16:30","codigo":"V6-EXCLUSIVO-GIO","curso":"VIOLÃO","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"TER - 16:30 - 17:20","capacidade":2,"alunos":1,"cancelamentos":0,"status":"EM ANDAMENTO","professor":"GIOVANI FANTINATI"},{"nome":"PROMO - VIOLÃO POPULAR - SEGUNDA 20:30 - TIAGO JOÃO","codigo":"V6-POPULAR","curso":"VIOLÃO","modulo":"VIOLÃO POPULAR","unidade":"ICEM-SEDE","horario":"SEG - 20:30 - 21:30","capacidade":20,"alunos":4,"cancelamentos":1,"status":"ABERTA","professor":"TIAGO JOÃO"},{"nome":"2026/1º - INTRODUÇÃO AO 7 CORDAS - QUARTA - 19:30 - JOÃO NETO","codigo":"V7-I7-QUA-19:30","curso":"VIOLÃO 7 CORDAS","modulo":"BÁSICO (PROMO20)","unidade":"ICEM-SEDE","horario":"QUA - 19:30 - 20:20","capacidade":10,"alunos":2,"cancelamentos":2,"status":"ABERTA","professor":"JOÃO NETO"},{"nome":"2026/1º - INTERMEDIÁRIO - QUARTA - 18:30 - JOÃO NETO","codigo":"V7-I-QUA-18:30","curso":"VIOLÃO 7 CORDAS","modulo":"BÁSICO (PROMO20)","unidade":"ICEM-SEDE","horario":"QUA - 18:30 - 19:20","capacidade":10,"alunos":2,"cancelamentos":0,"status":"ABERTA","professor":"JOÃO NETO"},{"nome":"2026/1º - BÁSICO 1 - SEGUNDA - 19:30 - JOÃO DIAS","codigo":"VIO-B1-SEG-19:30","curso":"VIOLINO","modulo":"BÁSICO 1","unidade":"ICEM-SEDE","horario":"SEG - 19:30 - 20:20","capacidade":10,"alunos":6,"cancelamentos":1,"status":"EM ANDAMENTO","professor":"JOÃO DIAS"},{"nome":"2026/1º - BÁSICO 2 - SEGUNDA - 17:30 - JOÃO DIAS","codigo":"VIO-B2-SEG-17:30","curso":"VIOLINO","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"SEG - 17:30 - 18:20","capacidade":10,"alunos":4,"cancelamentos":1,"status":"EM ANDAMENTO","professor":"JOÃO DIAS"},{"nome":"2026/1º - BÁSICO 3 - SEGUNDA - 20:30 - JOÃO DIAS","codigo":"VIO-B3-SEG-20:30","curso":"VIOLINO","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"SEG - 20:30 - 21:30","capacidade":10,"alunos":6,"cancelamentos":0,"status":"EM ANDAMENTO","professor":"JOÃO DIAS"},{"nome":"2026/1º - BÁSICO 5 - TERÇA - 20:30 - TIAGO JOÃO","codigo":"VIO-B5-TER-20:30-TIAGO","curso":"VIOLÃO","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"TER - 20:30 - 21:20","capacidade":10,"alunos":0,"cancelamentos":0,"status":"CANCELADA","professor":"TIAGO JOÃO"},{"nome":"2026/1º - BÁSICO 6 - QUARTA - 15:30 - GIOVANI FANTINATI","codigo":"VIO-B6-QUA-15:30-GIOVANI","curso":"VIOLÃO CRIANÇA","modulo":"INFANTIL","unidade":"ICEM-SEDE","horario":"QUA - 15:30 - 16:20","capacidade":5,"alunos":0,"cancelamentos":0,"status":"CANCELADA","professor":"GIOVANI FANTINATI"},{"nome":"2026/1º - BÁSICO 6 - TERÇA - 19:30 - TIAGO JOÃO","codigo":"VIO-B6-TER-19:30-TIAGO","curso":"VIOLÃO","modulo":"BÁSICO","unidade":"ICEM-SEDE","horario":"TER - 19:30 - 20:20","capacidade":10,"alunos":3,"cancelamentos":0,"status":"ABERTA","professor":"TIAGO JOÃO"}],"total_alunos":1448,"total_sem_teoria":1023,"total_turmas":241,"por_curso":[["TEORIA E PERCEPÇÃO MUSICAL",425],["VIOLÃO",168],["PANDEIRO",131],["CANTO POPULAR",118],["PROMO50",96],["PERCUSSÃO",58],["CAVAQUINHO",52],["FLAUTA TRANSVERSAL",44],["SAXOFONE",24],["ACORDEON",23],["GAITA CROMATICA",23],["TECLADO - INFANTIL",22],["VIOLÃO CRIANÇA",20],["BANDOLIM",18],["TECLADO",18],["PRÁTICA DE CONJUNTO - BOSSA NOVA",17],["PRÁTICA DE CONJUNTO - CHORO",16],["PRÁTICA DE CONJUNTO - SAMBA",16],["VIOLINO",16],["CLARINETA",14],["MUSICALIZAÇÃO 1 A 5 ANOS",14],["BLOQUINHO CORTANDO CEBOLA",13],["TOCANDO DE OUVIDO",12],["ORQUESTRA DE FLAUTA",11],["ORQUESTRA DE HARMÔNICA",10],["PRÁTICA DE CONJUNTO - SERESTA",9],["UKULELE",8],["CONTRA PONTO",7],["PERCUSSÃO E VOZ PARA CRIANÇAS",7],["PROMO20",7],["CAJON",5],["TROMPETE",5],["PRÉ-INSTRUMENTAL",4],["ORQUESTRA DE VIOLÃO",4],["VIOLÃO 7 CORDAS",4],["INICIAÇÃO MUSICAL",3],["ARRANJO",2],["COMPOSIÇAO",2],["CORDAS FRICCIONADAS NO CHORO",1],["VIOLINO JUVENIL",1]],"por_professor":[["JESUWAY LEÃO",199],["TIAGO JOÃO",171],["GIOVANI FANTINATI",141],["MÁRCIA TAUIL",106],["EDUARDO MILEN VIÉGAS JÚNIOR",72],["MATEUS TIMPONI",72],["GABRIEL CARNEIRO",67],["ARTHUR REIS",65],["JESSICA CARVALHO",61],["DIANA MOTA",55],["MATHEUS VILANOVA",48],["HENRIQUE NETO",47],["VICTOR MAURO",34],["NELSON SERRA",31],["IGNACIO GOMEZ",30],["LILI LEON",29],["LUCIANA CAVALCANTI",29],["PAULO LESSA",26],["CARLOS CARDENAS",26],["WILLIAM",24],["FELIPE NUNES",18],["JOÃO DIAS",18],["JOÃO NETO",18],["JACKSON DELANO CRUZ LEITE",16],["MÁRCIO MARINHO",15],["MERIELE SANTANA",10],["PAULO CÓRDOVA",8],["RAFAEL ALABARCE",7],["NICOLAU DE ANDRADE",5]],"poucas":[{"nome":"2026/1º - BÁSICO 2 - QUINTA - 15:30 - MÁRCIA TAUIL","curso":"CANTO POPULAR","alunos":0,"professor":"MÁRCIA TAUIL","horario":"QUI - 15:30 - 16:20"},{"nome":"2026/1º - 1 & 2 ANOS - SEXTA - 09:00 - IGNACIO GOMEZ","curso":"MUSICALIZAÇÃO 1 A 5 ANOS","alunos":0,"professor":"IGNACIO GOMEZ","horario":"SEX - 09:00 - 09:50"},{"nome":"2026/1º - 6 & 7 ANOS - SEXTA - 15:00 - JESUWAY LEÃO","curso":"PRÉ-INSTRUMENTAL","alunos":0,"professor":"JESUWAY LEÃO","horario":"SEX - 15:00 - 15:00"},{"nome":"2026/1º - 8 ANOS INICIADO - QUINTA - 11:00 - JESUWAY LEÃO","curso":"TECLADO - INFANTIL","alunos":0,"professor":"JESUWAY LEÃO","horario":"QUI - 11:00 - 11:50"},{"nome":"2026/1º - BÁSICO 3 - SEXTA - 10:00 - IGNACIO GOMEZ","curso":"VIOLÃO CRIANÇA","alunos":0,"professor":"IGNACIO GOMEZ","horario":"SEX - 10:00 - 10:50"},{"nome":"2026/1º - INTERMEDIÁRIO - SEGUNDA - 18:30 - JOÃO DIAS","curso":"VIOLINO JUVENIL","alunos":0,"professor":"JOÃO DIAS","horario":"SEG - 18:30 - 19:20"},{"nome":"2026/1º - BÁSICO 3 - QUINTA - 17:30 - LILI LEON","curso":"ACORDEON","alunos":1,"professor":"LILI LEON","horario":"QUI - 17:30 - 18:20"},{"nome":"2026/1º - BÁSICO 2 - TERÇA - 19:30 - FELIPE NUNES","curso":"BANDOLIM","alunos":1,"professor":"FELIPE NUNES","horario":"TER - 19:30 - 20:20"},{"nome":"2026/1º - FORMANDO - TERÇA - 20:30 - FELIPE NUNES","curso":"BANDOLIM","alunos":1,"professor":"FELIPE NUNES","horario":"TER - 20:30 - 21:20"},{"nome":"2026/1º - BÁSICO 2 - SEGUNDA - 16:30 - MATHEUS VILANOVA","curso":"CANTO POPULAR","alunos":1,"professor":"MATHEUS VILANOVA","horario":"SEG - 16:30 - 17:20"},{"nome":"2026/1º - BÁSICO 2 - QUARTA - 20:30 - MÁRCIO/VICTOR","curso":"CAVAQUINHO","alunos":1,"professor":"MÁRCIO MARINHO","horario":"QUA - 20:30 - 21:20"},{"nome":"2026/1º - BÁSICO 6 - QUARTA - 17:30 - MÁRCIO/VICTOR","curso":"CAVAQUINHO","alunos":1,"professor":"MÁRCIO MARINHO","horario":"QUA - 17:30 - 18:20"},{"nome":"2026/1º - SAMBA - BÁSICO 2 - SEGUNDA - 17:30 - MÁRCIO MARINHO","curso":"CAVAQUINHO","alunos":1,"professor":"MÁRCIO MARINHO","horario":"SEG - 17:30 - 18:20"},{"nome":"2026/1º - CFC - BÁSICO 1 - SEGUNDA - 15:30 - JOÃO DIAS","curso":"CORDAS FRICCIONADAS NO CHORO","alunos":1,"professor":"JOÃO DIAS","horario":"SEG - 15:30 - 16:20"},{"nome":"2026/1º - BÁSICO 3 - TERÇA - 18:30 - JACKSON DELANO","curso":"CLARINETA","alunos":1,"professor":"JACKSON DELANO CRUZ LEITE","horario":"TER - 18:30 - 19:20"},{"nome":"2026/1º - BÁSICO 2 - TERÇA - 09:40 - DIANA MOTA","curso":"FLAUTA TRANSVERSAL","alunos":1,"professor":"DIANA MOTA","horario":"TER - 09:40 - 10:30"},{"nome":"2026/1º - BÁSICO 2 - TERÇA - 20:40 - DIANA MOTA","curso":"FLAUTA TRANSVERSAL","alunos":1,"professor":"DIANA MOTA","horario":"TER - 20:40 - 21:30"},{"nome":"2026/1º - BÁSICO 4 - TERÇA - 14:00 - DIANA MOTA","curso":"FLAUTA TRANSVERSAL","alunos":1,"professor":"DIANA MOTA","horario":"TER - 14:00 - 14:50"},{"nome":"2026/1º - 8 ANOS INICIADO - SEXTA - 17:00 - JESUWAY LEÃO","curso":"TECLADO - INFANTIL","alunos":1,"professor":"JESUWAY LEÃO","horario":"SEX - 17:00 - 17:50"},{"nome":"2026/1º - BÁSICO 3 - SEXTA - 14:00 - LUCIANA CAVALCANTI","curso":"VIOLÃO CRIANÇA","alunos":1,"professor":"LUCIANA CAVALCANTI","horario":"SEX - 14:00 - 14:50"},{"nome":"2026/1º - INTERMEDIÁRIO - SEGUNDA - 16:30 - JOÃO DIAS","curso":"VIOLINO JUVENIL","alunos":1,"professor":"JOÃO DIAS","horario":"SEG - 16:30 - 17:20"},{"nome":"2026/1º - PERSONALIZADO - SEGUNDA - 19:30 - HENRIQUE NETO","curso":"VIOLÃO","alunos":1,"professor":"HENRIQUE NETO","horario":"SEG - 19:30 - 20:20"},{"nome":"2026/1º - BÁSICO 3 - SEGUNDA - 18:30 - CARLOS CARDENAS","curso":"SAXOFONE","alunos":1,"professor":"CARLOS CARDENAS","horario":"SEG - 18:30 - 19:20"},{"nome":"2026/1º - BÁSICO 6 - QUINTA - 18:30 - JESUWAY LEÃO","curso":"TEORIA E PERCEPÇÃO MUSICAL","alunos":1,"professor":"JESUWAY LEÃO","horario":"QUI - 18:30 - 19:20"},{"nome":"2026/1º - BÁSICO 4 - QUINTA - 18:30 - IGNACIO GOMEZ","curso":"UKULELE","alunos":1,"professor":"IGNACIO GOMEZ","horario":"QUI - 18:30 - 19:20"},{"nome":"2026/1º - BÁSICO 4 - QUINTA - 17:30 - ARTHUR REIS","curso":"VIOLÃO","alunos":1,"professor":"ARTHUR REIS","horario":"QUI - 17:30 - 18:20"},{"nome":"2026/1º - BÁSICO 5 - TERÇA - 09:30 - GIOVANI FANTINATI","curso":"VIOLÃO CRIANÇA","alunos":1,"professor":"GIOVANI FANTINATI","horario":"TER - 09:40 - 10:30"},{"nome":"2026/1º - BÁSICO 8 - TERÇA - 17:30 - ARTHUR REIS","curso":"VIOLÃO","alunos":1,"professor":"ARTHUR REIS","horario":"TER - 17:30 - 18:20"},{"nome":"2026/1º - BÀSICO - SEGUNDA - 19:30 - JACKSON DELANO","curso":"ARRANJO","alunos":2,"professor":"JACKSON DELANO CRUZ LEITE","horario":"SEG - 19:30 - 20:20"},{"nome":"2026/1º - AVANÇADO 2 - TERÇA - 17:30 - FELIPE NUNES","curso":"BANDOLIM","alunos":2,"professor":"FELIPE NUNES","horario":"TER - 19:30 - 20:20"},{"nome":"2026/1º - INTERMEDIARIO 2 - SEGUNDA - 19:30 - FELIPE NUNES","curso":"BANDOLIM","alunos":2,"professor":"FELIPE NUNES","horario":"SEG - 19:30 - 20:20"},{"nome":"2026/1º - BÁSICO 3 - SEGUNDA - 18:30 - MATHEUS VILANOVA","curso":"CANTO POPULAR","alunos":2,"professor":"MATHEUS VILANOVA","horario":"SEG - 18:30 - 19:20"},{"nome":"2026/1º - BÁSICO 4 - SEXTA - 15:00 - MATHEUS VILANOVA","curso":"CANTO POPULAR","alunos":2,"professor":"MATHEUS VILANOVA","horario":"SEX - 15:00 - 15:00"},{"nome":"2026/1º - BÁSICO 1 - QUARTA - 19:30 - MÁRCIO/VICTOR","curso":"CAVAQUINHO","alunos":2,"professor":"MÁRCIO MARINHO","horario":"QUA - 19:30 - 20:20"},{"nome":"2026/1º - BÁSICO 1 - SEGUNDA - 19:30 - MÁRCIO MARINHO","curso":"CAVAQUINHO","alunos":2,"professor":"MÁRCIO MARINHO","horario":"SEG - 19:30 - 20:20"},{"nome":"2026/1º - BÁSICO 2 - QUARTA - 18:30 - MÁRCIO/VICTOR","curso":"CAVAQUINHO","alunos":2,"professor":"MÁRCIO MARINHO","horario":"QUA - 18:30 - 19:20"},{"nome":"2026/1º - BÁSICO 3 - TERÇA - 19:30 - JACKSON DELANO","curso":"CLARINETA","alunos":2,"professor":"JACKSON DELANO CRUZ LEITE","horario":"TER - 19:30 - 20:20"},{"nome":"2026/1º - INTERMEDIÁRIO - SEGUNDA - 18:30 - JACKSON DELANO","curso":"CLARINETA","alunos":2,"professor":"JACKSON DELANO CRUZ LEITE","horario":"SEG - 18:30 - 19:20"},{"nome":"2026/1º - BÁSICO 1 - QUINTA - 18:30 - PAULO CÓRDOVA","curso":"COMPOSIÇAO","alunos":2,"professor":"PAULO CÓRDOVA","horario":"QUI - 18:30 - 19:20"},{"nome":"2026/1º - BÁSICO 1 - QUARTA - 15:40 - DIANA MOTA","curso":"FLAUTA TRANSVERSAL","alunos":2,"professor":"DIANA MOTA","horario":"QUA - 15:40 - 16:30"},{"nome":"2026/1º - BÁSICO 2 - QUARTA - 16:30 - DIANA MOTA","curso":"FLAUTA TRANSVERSAL","alunos":2,"professor":"DIANA MOTA","horario":"QUA - 16:30 - 17:20"},{"nome":"2026/1º - BÁSICO 3 - TERÇA - 10:30 - DIANA MOTA","curso":"FLAUTA TRANSVERSAL","alunos":2,"professor":"DIANA MOTA","horario":"TER - 10:30 - 11:20"},{"nome":"2026/1º - BÁSICO 6 - TERÇA - 14:50 - DIANA MOTA","curso":"FLAUTA TRANSVERSAL","alunos":2,"professor":"DIANA MOTA","horario":"TER - 14:50 - 15:40"},{"nome":"2026/1º - BÁSICO 2 - QUARTA - 13:00 - PAULO LESSA","curso":"GAITA CROMATICA","alunos":2,"professor":"PAULO LESSA","horario":"QUA - 13:00 - 13:50"},{"nome":"2026/1º - BÁSICO 3 - QUARTA - 18:30 - PAULO LESSA","curso":"GAITA CROMATICA","alunos":2,"professor":"PAULO LESSA","horario":"QUA - 18:30 - 19:20"},{"nome":"2026/1º - BÁSICO 6 - QUARTA - 19:30 - PAULO LESSA","curso":"GAITA CROMATICA","alunos":2,"professor":"PAULO LESSA","horario":"QUA - 19:30 - 20:20"},{"nome":"2026/1º - 1 & 2 ANOS - SÁBADO - 09:00 - IGNACIO GOMEZ","curso":"MUSICALIZAÇÃO 1 A 5 ANOS","alunos":2,"professor":"IGNACIO GOMEZ","horario":"SAB - 09:00 ÀS 09:40"},{"nome":"2026/1º - BÁSICO 7 - SEXTA - 16:00 - IGNACIO GOMEZ","curso":"VIOLÃO CRIANÇA","alunos":2,"professor":"IGNACIO GOMEZ","horario":"SEX - 16:00 - 16:50"},{"nome":"2026/1º - INTERMEDIÁRIO - QUARTA - 17:30 - HENRIQUE NETO","curso":"TOCANDO DE OUVIDO","alunos":2,"professor":"HENRIQUE NETO","horario":"QUA - 17:30 - 18:20"},{"nome":"2026/1º - BÁSICO 3 - QUARTA - 18:30 - MATEUS TIMPONI","curso":"PANDEIRO","alunos":2,"professor":"MATEUS TIMPONI","horario":"QUA - 19:30 - 20:20"},{"nome":"2026/1º - INTERMEDIÁRIO - TERÇA - 18:30 - GABRIEL CARNEIRO","curso":"PANDEIRO","alunos":2,"professor":"GABRIEL CARNEIRO","horario":"TER - 18:30 - 19:20"},{"nome":"2026/1º - BÁSICO 2 - QUARTA - 20:30 - MATEUS TIMPONI","curso":"PERCUSSÃO","alunos":2,"professor":"MATEUS TIMPONI","horario":"QUA - 20:30 - 21:20"},{"nome":"2026/1º - BÁSICO 2 - QUINTA - 13:00 - JUNIOR VIÉGAS","curso":"PERCUSSÃO","alunos":2,"professor":"EDUARDO MILEN VIÉGAS JÚNIOR","horario":"QUI - 11:00 - 11:50"},{"nome":"2026/1º - BÁSICO 2 - QUARTA - 11:00 - CARLOS CARDENAS","curso":"PROMO50","alunos":2,"professor":"CARLOS CARDENAS","horario":"QUA - 10:00 - 10:50"},{"nome":"2026/1º - BÁSICO 3 - QUARTA - 10:00 - CARLOS CARDENAS","curso":"SAXOFONE","alunos":2,"professor":"CARLOS CARDENAS","horario":"QUA - 10:00 - 10:50"},{"nome":"2026/1º - BÁSICO 4 - QUARTA - 09:00 - CARLOS CARDENAS","curso":"SAXOFONE","alunos":2,"professor":"CARLOS CARDENAS","horario":"QUA - 09:00 - 09:50"},{"nome":"2026/1º - BÁSICO 1 - QUARTA - 10:00 - NICOLAU DE ANDRADE","curso":"TROMPETE","alunos":2,"professor":"NICOLAU DE ANDRADE","horario":"QUA - 10:00 - 10:50"},{"nome":"2026/1º - BÁSICO 2 - QUINTA - 17:30 - IGNACIO GOMEZ","curso":"UKULELE","alunos":2,"professor":"IGNACIO GOMEZ","horario":"QUI - 17:30 - 18:20"},{"nome":"2026/1º - BÁSICO 3 - QUINTA - 19:30 - IGNACIO GOMEZ","curso":"UKULELE","alunos":2,"professor":"IGNACIO GOMEZ","horario":"QUI - 19:30 - 20:20"},{"nome":"2026/1º - BÁSICO 4 - QUARTA - 17:30 - JOÃO NETO","curso":"VIOLÃO","alunos":2,"professor":"JOÃO NETO","horario":"QUA - 17:30 - 18:20"},{"nome":"2026/1º - BÁSICO 4 - SEGUNDA - 18:30 - ARTHUR REIS","curso":"VIOLÃO","alunos":2,"professor":"ARTHUR REIS","horario":"SEG - 18:30 - 19:20"},{"nome":"2026/1º - BÁSICO 5 - QUARTA - 19:30 - ARTHUR REIS","curso":"VIOLÃO","alunos":2,"professor":"ARTHUR REIS","horario":"QUA - 19:30 - 20:20"},{"nome":"2026/1º - BÁSICO 6 - QUINTA - 17:40 - TIAGO JOÃO","curso":"VIOLÃO","alunos":2,"professor":"TIAGO JOÃO","horario":"QUI - 17:40 - 18:30"},{"nome":"2026/1º - INTRODUÇÃO AO 7 CORDAS - QUARTA - 19:30 - JOÃO NETO","curso":"VIOLÃO 7 CORDAS","alunos":2,"professor":"JOÃO NETO","horario":"QUA - 19:30 - 20:20"},{"nome":"2026/1º - INTERMEDIÁRIO - QUARTA - 18:30 - JOÃO NETO","curso":"VIOLÃO 7 CORDAS","alunos":2,"professor":"JOÃO NETO","horario":"QUA - 18:30 - 19:20"}],"historico":[{"data_iso":"2026-03-27","data_fmt":"27/03/2026 16:20","total_alunos":1448,"total_sem_teoria":1023,"total_turmas":241}]};
-// ============================================================
+            // Semester progress
+            const weekNumber = getWeekNumber();
+            const totalWeeks = 26;
+            const percentage = Math.min((weekNumber / totalWeeks) * 100, 100);
+            document.getElementById('semesterProgress').style.width = percentage + '%';
+            document.getElementById('semesterProgress').textContent = weekNumber + ' semanas de ' + totalWeeks;
 
-function render() {
-  if (!DADOS || !DADOS.turmas) {
-    document.querySelector('.container').innerHTML =
-      '<div class="sem-dados"><div class="icon">📭</div><p>Aguardando primeira coleta de dados...</p></div>';
-    return;
-  }
+            // Turmas com poucos alunos
+            renderPoucosList();
 
-  // KPIs
-  document.getElementById('data-atualiz').textContent = DADOS.data_atualizacao || '–';
-  document.getElementById('kpi-alunos').textContent = DADOS.total_alunos ?? '–';
-  document.getElementById('kpi-sem-teoria').textContent = DADOS.total_sem_teoria ?? '–';
-  document.getElementById('kpi-turmas').textContent = DADOS.total_turmas ?? '–';
-  document.getElementById('kpi-alerta').textContent = (DADOS.poucas || []).length;
+            // Histórico
+            renderHistorico();
 
-  // Cursos
-  const maxAlunos = Math.max(...(DADOS.por_curso || []).map(c => c[1]), 1);
-  const tbodyCursos = document.querySelector('#tabela-cursos tbody');
-  tbodyCursos.innerHTML = (DADOS.por_curso || []).map(([curso, n]) => `
-    <tr>
-      <td>
-        <div>${curso}</div>
-        <div class="barra-wrap"><div class="barra" style="width:${Math.round(n/maxAlunos*100)}%"></div></div>
-      </td>
-      <td>${n}</td>
-    </tr>`).join('');
+            // Cursos chart
+            renderCursosChart();
 
-  // Alertas turmas com poucos alunos
-  const alertas = document.getElementById('lista-alertas');
-  if ((DADOS.poucas || []).length === 0) {
-    alertas.innerHTML = '<p style="color:#888;font-size:.9rem;padding:10px 0">Nenhuma turma com 2 alunos ou menos.</p>';
-  } else {
-    alertas.innerHTML = (DADOS.poucas || []).map(t => `
-      <div class="alerta-item">
-        <span class="qtd">${t.alunos}</span>
-        <div class="nome">${t.nome}</div>
-        <div class="detalhe">${t.curso} · ${t.professor || 'sem professor'} · ${t.horario || ''}</div>
-      </div>`).join('');
-  }
+            // Professores
+            renderProfessores();
 
-  // Professores
-  const profGrid = document.getElementById('prof-grid');
-  profGrid.innerHTML = (DADOS.por_professor || []).map(([nome, n]) => `
-    <div class="prof-card">
-      <div class="pnome">${nome}</div>
-      <div class="pnum">${n} <span style="font-size:.8rem;font-weight:400;color:#888">alunos</span></div>
-    </div>`).join('');
+            // Infantil
+            renderInfantil();
+        }
 
-  // Gráfico histórico
-  if ((DADOS.historico || []).length > 1) {
-    const labels = DADOS.historico.map(h => h.data_fmt ? h.data_fmt.split(' ')[0] : h.data_iso);
-    const valores = DADOS.historico.map(h => h.total_alunos);
-    const valoresST = DADOS.historico.map(h => h.total_sem_teoria);
+        function getWeekNumber() {
+            const now = new Date();
+            const start = new Date(2026, 0, 5); // Jan 5, 2026
+            const diff = now - start;
+            const oneWeek = 7 * 24 * 60 * 60 * 1000;
+            return Math.floor(diff / oneWeek) + 1;
+        }
 
-    new Chart(document.getElementById('grafico-hist'), {
-      type: 'line',
-      data: {
-        labels,
-        datasets: [
-          { label: 'Total de Alunos', data: valores, borderColor: '#2e7d32', backgroundColor: 'rgba(46,125,50,.1)', tension: .3, fill: true, pointRadius: 4 },
-          { label: 'Sem Teoria Musical', data: valoresST, borderColor: '#1565c0', backgroundColor: 'rgba(21,101,192,.07)', tension: .3, fill: true, pointRadius: 4 }
-        ]
-      },
-      options: {
-        responsive: true, maintainAspectRatio: false,
-        plugins: { legend: { position: 'top' } },
-        scales: { y: { beginAtZero: false, ticks: { stepSize: 5 } } }
-      }
-    });
-  } else {
-    document.getElementById('grafico-hist').parentElement.innerHTML =
-      '<p style="color:#aaa;text-align:center;padding:20px">Histórico disponível após 2+ coletas</p>';
-  }
-}
+        // ============ TURMAS COM POUCOS ALUNOS ============
+        function renderPoucosList() {
+            const list = document.getElementById('poucosList');
+            list.innerHTML = '';
 
-render();
-</script>
+            const sorted = dashboardData.turmas_com_poucos.sort((a, b) => a.alunos - b.alunos);
+
+            sorted.forEach(t => {
+                const li = document.createElement('li');
+                li.className = 'small-list-item';
+                li.innerHTML = `
+                    <span class="small-list-label">${t.curso}</span>
+                    <span class="small-list-value">${t.alunos} aluno${t.alunos !== 1 ? 's' : ''}</span>
+                `;
+                list.appendChild(li);
+            });
+        }
+
+        // ============ HISTÓRICO ============
+        function renderHistorico() {
+            const hist = dashboardData.historico;
+
+            if (hist.length === 1) {
+                document.getElementById('historicoMessage').innerHTML =
+                    '<p>Histórico disponível após 2+ coletas de dados</p>';
+                document.getElementById('historicoChartContainer').style.display = 'none';
+            } else {
+                document.getElementById('historicoMessage').innerHTML = '';
+                document.getElementById('historicoChartContainer').style.display = 'block';
+                renderHistoricoChart();
+            }
+
+            // Modal content
+            const modalContent = document.getElementById('historicoContent');
+            let html = '<table style="width: 100%; border-collapse: collapse;">';
+            html += '<tr style="background: #e8f5e9; border-bottom: 2px solid #40916c;"><th style="padding: 12px; text-align: left; font-weight: 700; color: #2d6a4f;">Data</th><th style="padding: 12px; text-align: left; font-weight: 700; color: #2d6a4f;">Alunos</th><th style="padding: 12px; text-align: left; font-weight: 700; color: #2d6a4f;">Turmas</th></tr>';
+            hist.forEach(h => {
+                html += `<tr style="border-bottom: 1px solid #e0e0e0;"><td style="padding: 12px;">${h.data_fmt}</td><td style="padding: 12px;">${h.total_alunos}</td><td style="padding: 12px;">${h.total_turmas}</td></tr>`;
+            });
+            html += '</table>';
+            modalContent.innerHTML = html;
+        }
+
+        function renderHistoricoChart() {
+            const ctx = document.getElementById('historicoChart').getContext('2d');
+            const labels = dashboardData.historico.map(h => h.data_fmt);
+            const data = dashboardData.historico.map(h => h.total_alunos);
+
+            if (chartInstances.historico) chartInstances.historico.destroy();
+
+            chartInstances.historico = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Total de Alunos',
+                        data: data,
+                        borderColor: '#2d6a4f',
+                        backgroundColor: 'rgba(45, 106, 79, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        pointRadius: 6,
+                        pointBackgroundColor: '#40916c',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            ticks: { color: '#666' },
+                            grid: { color: '#f0f0f0' }
+                        },
+                        x: {
+                            ticks: { color: '#666' },
+                            grid: { color: '#f0f0f0' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ============ CURSOS CHART ============
+        function renderCursosChart() {
+            const ctx = document.getElementById('cursosChart').getContext('2d');
+            const labels = dashboardData.cursos.map(c => c[0]);
+            const data = dashboardData.cursos.map(c => c[1]);
+
+            if (chartInstances.cursos) chartInstances.cursos.destroy();
+
+            chartInstances.cursos = new Chart(ctx, {
+                type: 'barh',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Alunos',
+                        data: data,
+                        backgroundColor: '#40916c',
+                        borderColor: '#2d6a4f',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: {
+                            ticks: { color: '#666' },
+                            grid: { color: '#f0f0f0' }
+                        },
+                        y: {
+                            ticks: { color: '#666', font: { size: 11 } },
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ============ PROFESSORES ============
+        let professorSortMode = 'alunos';
+
+        function renderProfessores() {
+            let sorted = [...dashboardData.professores];
+
+            if (professorSortMode === 'alunos') {
+                sorted.sort((a, b) => b.alunos - a.alunos);
+            } else if (professorSortMode === 'turmas') {
+                sorted.sort((a, b) => b.turmas - a.turmas);
+            } else {
+                sorted.sort((a, b) => a.nome.localeCompare(b.nome));
+            }
+
+            document.getElementById('professorTitle').textContent = `👨‍🏫 Professores e suas Turmas (${sorted.length})`;
+
+            const grid = document.getElementById('professorGrid');
+            grid.innerHTML = '';
+
+            sorted.forEach(prof => {
+                const card = document.createElement('div');
+                card.className = 'professor-card';
+                card.innerHTML = `
+                    <div class="professor-name">${prof.nome}</div>
+                    <div class="professor-meta">
+                        <div class="professor-meta-item">
+                            <span class="professor-meta-label">Turmas:</span>
+                            <span class="professor-meta-value">${prof.turmas}</span>
+                        </div>
+                        <div class="professor-meta-item">
+                            <span class="professor-meta-label">Alunos:</span>
+                            <span class="professor-meta-value">${prof.alunos}</span>
+                        </div>
+                    </div>
+                    <div class="professor-courses">
+                        ${prof.cursos.slice(0, 3).map(c => `<span class="course-tag">${c}</span>`).join('')}
+                        ${prof.cursos.length > 3 ? `<span class="course-tag">+${prof.cursos.length - 3}</span>` : ''}
+                    </div>
+                    <div class="professor-expanded">
+                        <table class="professor-table">
+                            <thead>
+                                <tr>
+                                    <th>Curso</th>
+                                    <th>Turmas</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${prof.cursos.map(c => `<tr><td>${c}</td><td>-</td></tr>`).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+                card.onclick = () => card.classList.toggle('expanded');
+                grid.appendChild(card);
+            });
+        }
+
+        function sortProfessores(mode) {
+            professorSortMode = mode;
+
+            document.querySelectorAll('.sort-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            renderProfessores();
+        }
+
+        // ============ INFANTIL ============
+        function renderInfantil() {
+            document.getElementById('infantilAlunos').textContent = dashboardData.infantil_alunos;
+            document.getElementById('infantilTurmas').textContent = dashboardData.infantil_count;
+            document.getElementById('infantilMedia').textContent = dashboardData.infantil_media.toFixed(1);
+
+            // Table
+            const tbody = document.getElementById('infantilTableBody');
+            tbody.innerHTML = '';
+            dashboardData.infantil_turmas.slice(0, 20).forEach(t => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${t.nome.substring(0, 20)}...</td>
+                    <td>${t.curso}</td>
+                    <td>${t.professor}</td>
+                    <td style="text-align: center; font-weight: 600;">${t.alunos}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // Donut chart
+            renderInfantilChart();
+        }
+
+        function renderInfantilChart() {
+            const ctx = document.getElementById('infantilChart').getContext('2d');
+            const labels = dashboardData.infantil_cursos.map(c => c[0]);
+            const data = dashboardData.infantil_cursos.map(c => c[1]);
+
+            if (chartInstances.infantil) chartInstances.infantil.destroy();
+
+            chartInstances.infantil = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: [
+                            '#40916c', '#52b788', '#74c69d', '#95d5b2',
+                            '#b7e4c7', '#d8f3dc', '#e8f5e9', '#f1f8f5'
+                        ],
+                        borderColor: '#fff',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { font: { size: 11 }, padding: 12, color: '#666' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ============ MODAL ============
+        function showHistoricoModal() {
+            document.getElementById('historicoModal').style.display = 'flex';
+        }
+
+        function closeHistoricoModal() {
+            document.getElementById('historicoModal').style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('historicoModal');
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        }
+    </script>
 </body>
 </html>
