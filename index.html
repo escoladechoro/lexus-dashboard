@@ -623,8 +623,6 @@
                 {"nome": "2026/1º - BÀSICO - SEGUNDA - 19:30 - JACKSON DELANO", "curso": "ARRANJO", "alunos": 2, "professor": "JACKSON DELANO CRUZ LEITE"},
                 {"nome": "2026/1º - AVANÇADO 2 - TERÇA - 17:30 - FELIPE NUNES", "curso": "BANDOLIM", "alunos": 2, "professor": "FELIPE NUNES"},
                 {"nome": "2026/1º - BÁSICO 2 - TERÇA - 19:30 - FELIPE NUNES", "curso": "BANDOLIM", "alunos": 1, "professor": "FELIPE NUNES"},
-                {"nome":A - 17:30 - FELIPE NUNES", "curso": "BANDOLIM", "alunos": 2, "professor": "FELIPE NUNES"},
-                {"nome": "2026/1º - BÁSICO 2 - TERÇA - 19:30 - FELIPE NUNES", "curso": "BANDOLIM", "alunos": 1, "professor": "FELIPE NUNES"},
                 {"nome": "2026/1º - FORMANDO - TERÇA - 20:30 - FELIPE NUNES", "curso": "BANDOLIM", "alunos": 1, "professor": "FELIPE NUNES"},
                 {"nome": "2026/1º - INTERMEDIARIO 2 - SEGUNDA - 19:30 - FELIPE NUNES", "curso": "BANDOLIM", "alunos": 2, "professor": "FELIPE NUNES"},
                 {"nome": "2026/1º - BÁSICO 2 - QUINTA - 15:30 - MÁRCIA TAUIL", "curso": "CANTO POPULAR", "alunos": 0, "professor": "MÁRCIA TAUIL"},
@@ -694,70 +692,87 @@
         });
 
         function initializeDashboard() {
+            // Update last updated time
             const today = new Date();
             const dateStr = today.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
             document.getElementById('lastUpdated').textContent = 'Atualizado em ' + dateStr;
 
+            // Update KPIs
             document.getElementById('totalAlunos').textContent = dashboardData.total_alunos.toLocaleString('pt-BR');
             document.getElementById('semTeoria').textContent = dashboardData.total_sem_teoria.toLocaleString('pt-BR');
             document.getElementById('turmasAtivas').textContent = dashboardData.total_turmas_ativas.toLocaleString('pt-BR');
             document.getElementById('countProfessores').textContent = dashboardData.count_professores.toLocaleString('pt-BR');
             document.getElementById('poucoAlunos').textContent = dashboardData.count_turmas_com_poucos.toLocaleString('pt-BR');
 
+            // Semester progress
             const weekNumber = getWeekNumber();
             const totalWeeks = 26;
             const percentage = Math.min((weekNumber / totalWeeks) * 100, 100);
             document.getElementById('semesterProgress').style.width = percentage + '%';
             document.getElementById('semesterProgress').textContent = weekNumber + ' semanas de ' + totalWeeks;
 
+            // Turmas com poucos alunos
             renderPoucosList();
+
+            // Histórico
             renderHistorico();
+
+            // Cursos chart
             renderCursosChart();
+
+            // Professores
             renderProfessores();
+
+            // Infantil
             renderInfantil();
         }
 
         function getWeekNumber() {
             const now = new Date();
-            const start = new Date(2026, 0, 5);
+            const start = new Date(2026, 0, 5); // Jan 5, 2026
             const diff = now - start;
             const oneWeek = 7 * 24 * 60 * 60 * 1000;
             return Math.floor(diff / oneWeek) + 1;
         }
 
+        // ============ TURMAS COM POUCOS ALUNOS ============
         function renderPoucosList() {
             const list = document.getElementById('poucosList');
             list.innerHTML = '';
+
             const sorted = dashboardData.turmas_com_poucos.sort((a, b) => a.alunos - b.alunos);
+
             sorted.forEach(t => {
                 const li = document.createElement('li');
                 li.className = 'small-list-item';
-                li.innerHTML = `<span class="small-list-label">${t.curso}</span><span class="small-list-value">${t.alunos} aluno${t.alunos !== 1 ? 's' : ''}</span>`;
+                li.innerHTML = `
+                    <span class="small-list-label">${t.curso}</span>
+                    <span class="small-list-value">${t.alunos} aluno${t.alunos !== 1 ? 's' : ''}</span>
+                `;
                 list.appendChild(li);
             });
         }
 
+        // ============ HISTÓRICO ============
         function renderHistorico() {
             const hist = dashboardData.historico;
+
             if (hist.length === 1) {
-                document.getElementById('historicoMessage').innerHTML = '<p>Histórico disponível após 2+ coletas de dados</p>';
+                document.getElementById('historicoMessage').innerHTML =
+                    '<p>Histórico disponível após 2+ coletas de dados</p>';
                 document.getElementById('historicoChartContainer').style.display = 'none';
             } else {
                 document.getElementById('historicoMessage').innerHTML = '';
                 document.getElementById('historicoChartContainer').style.display = 'block';
                 renderHistoricoChart();
             }
+
+            // Modal content
             const modalContent = document.getElementById('historicoContent');
             let html = '<table style="width: 100%; border-collapse: collapse;">';
             html += '<tr style="background: #e8f5e9; border-bottom: 2px solid #40916c;"><th style="padding: 12px; text-align: left; font-weight: 700; color: #2d6a4f;">Data</th><th style="padding: 12px; text-align: left; font-weight: 700; color: #2d6a4f;">Alunos</th><th style="padding: 12px; text-align: left; font-weight: 700; color: #2d6a4f;">Turmas</th></tr>';
             hist.forEach(h => {
                 html += `<tr style="border-bottom: 1px solid #e0e0e0;"><td style="padding: 12px;">${h.data_fmt}</td><td style="padding: 12px;">${h.total_alunos}</td><td style="padding: 12px;">${h.total_turmas}</td></tr>`;
-            });
-            html += '</table>';
-            modalContent.innerHTML = html;
-        }
-
-        function renderHi;
             });
             html += '</table>';
             modalContent.innerHTML = html;
@@ -807,6 +822,7 @@
             });
         }
 
+        // ============ CURSOS CHART ============
         function renderCursosChart() {
             const ctx = document.getElementById('cursosChart').getContext('2d');
             const labels = dashboardData.cursos.map(c => c[0]);
@@ -845,6 +861,7 @@
             });
         }
 
+        // ============ PROFESSORES ============
         let professorSortMode = 'alunos';
 
         function renderProfessores() {
@@ -903,16 +920,20 @@
 
         function sortProfessores(mode) {
             professorSortMode = mode;
+
             document.querySelectorAll('.sort-btn').forEach(btn => btn.classList.remove('active'));
             event.target.classList.add('active');
+
             renderProfessores();
         }
 
+        // ============ INFANTIL ============
         function renderInfantil() {
             document.getElementById('infantilAlunos').textContent = dashboardData.infantil_alunos;
             document.getElementById('infantilTurmas').textContent = dashboardData.infantil_count;
             document.getElementById('infantilMedia').textContent = dashboardData.infantil_media.toFixed(1);
 
+            // Table
             const tbody = document.getElementById('infantilTableBody');
             tbody.innerHTML = '';
             dashboardData.infantil_turmas.slice(0, 20).forEach(t => {
@@ -925,6 +946,8 @@
                 `;
                 tbody.appendChild(tr);
             });
+
+            // Donut chart
             renderInfantilChart();
         }
 
@@ -962,6 +985,7 @@
             });
         }
 
+        // ============ MODAL ============
         function showHistoricoModal() {
             document.getElementById('historicoModal').style.display = 'flex';
         }
